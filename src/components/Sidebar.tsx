@@ -32,7 +32,9 @@ export function Sidebar() {
     }`;
 
   const navItems = NAV_ITEMS.map((item) => {
-    const active = pathname === item.href;
+    const active =
+      pathname === item.href ||
+      (item.href === "/" && pathname.startsWith("/lesson"));
     return (
       <Link key={item.href} href={item.href} className={linkClass(active)}>
         <span className="text-base">{item.emoji}</span>

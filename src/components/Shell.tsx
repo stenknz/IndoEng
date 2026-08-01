@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
+import { useStore } from "@/lib/store/useStore";
 
 export function Shell({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    useStore.getState().hydrate();
+  }, []);
+
   return (
     <div className="min-h-screen md:flex">
       <Sidebar />

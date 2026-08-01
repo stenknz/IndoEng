@@ -39,17 +39,17 @@ export function Dashboard() {
             100,
         );
 
-  const firstRun = Object.keys(state.words).length === 0;
+  const learned = knownWordIds(state.words).length;
+  const firstRun = learned === 0;
+  const progress = Math.min(1, learned / WORD_BANK.length);
+  const level = state.profile.level;
+
   const continueLesson = LESSONS.find(
     (l) => state.lessons[l.id]?.status !== "complete",
   );
   const firstLesson = LESSONS[0];
 
   const dueWords = scheduler.dueItems(state.words).slice(0, 5);
-
-  const learned = knownWordIds(state.words).length;
-  const progress = Math.min(1, learned / WORD_BANK.length);
-  const level = state.profile.level;
 
   return (
     <div className="space-y-6">

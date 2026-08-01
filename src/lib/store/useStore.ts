@@ -13,6 +13,8 @@ export type WordResult = "correct" | "partial" | "wrong";
 
 interface TutorState {
   state: ReturnType<typeof localStore.getState>;
+  hydrated: boolean;
+  hydrate: () => void;
   setUser: (name: string) => void;
   updateProfile: (partial: Partial<TutorState["state"]["profile"]>) => void;
   recordAttempt: (a: PracticeAttempt) => void;
@@ -43,13 +45,14 @@ function emptyWord(id: string): VocabularyWord {
   };
 }
 
-function initState(name: string): TutorState["state"] {
-  if (typeof window === "undefined") return createInitialState(name);
-  return localStore.getState();
-}
-
 export const useStore = create<TutorState>((set, get) => ({
-  state: initState("Sten"),
+  state: createInitialState("Sten"),
+  hydrated: false,
+
+  hydrate: () => {
+    if (typeof window === "undefined") return;
+    set({ state: localStore.getState(), hydrated: true });
+  },
 
   setUser: (name) => {
     const state = { ...get().state, user: { ...get().state.user, name } };
