@@ -108,6 +108,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   const [recallIndex, setRecallIndex] = useState(0);
   const [recallInput, setRecallInput] = useState("");
   const [recallFeedback, setRecallFeedback] = useState<string | null>(null);
+  const [recallFeedbackType, setRecallFeedbackType] = useState<"ok" | "warn" | null>(null);
   const [recallFails, setRecallFails] = useState(0);
   const [recallRevealed, setRecallRevealed] = useState(false);
 
@@ -219,12 +220,14 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
     if (result.correct === true) {
       setCorrectCount((c) => c + 1);
       setRecallFeedback(`Bagus! 🙂 ${item.indonesian} = ${item.english}`);
+      setRecallFeedbackType("ok");
       const idx = recallIndex;
       setTimeout(() => {
         if (idx + 1 < lesson.recall.length) {
           setRecallIndex(idx + 1);
           setRecallInput("");
           setRecallFeedback(null);
+          setRecallFeedbackType(null);
           setRecallFails(0);
           setRecallRevealed(false);
         } else {
@@ -233,6 +236,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       }, 900);
     } else {
       setMistakes((m) => m + 1);
+      setRecallFeedbackType("warn");
       const fails = recallFails + 1;
       setRecallFails(fails);
       if (fails >= 2) {
@@ -249,6 +253,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       setRecallIndex(recallIndex + 1);
       setRecallInput("");
       setRecallFeedback(null);
+      setRecallFeedbackType(null);
       setRecallFails(0);
       setRecallRevealed(false);
     } else {
@@ -473,7 +478,9 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
           {recallFeedback && (
             <div
               className={`mt-4 rounded-xl px-4 py-3 text-sm ${
-                recallRevealed ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-700"
+                recallFeedbackType === "ok"
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-amber-50 text-amber-800"
               }`}
             >
               {recallFeedback}
