@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type {
+  Conversation,
   LearningSession,
   LessonProgress,
   PracticeAttempt,
@@ -18,6 +19,7 @@ interface TutorState {
   setUser: (name: string) => void;
   updateProfile: (partial: Partial<TutorState["state"]["profile"]>) => void;
   recordAttempt: (a: PracticeAttempt) => void;
+  saveConversation: (c: Conversation) => void;
   addSession: (s: LearningSession) => void;
   setLessonProgress: (id: string, status: LessonProgress["status"]) => void;
   bumpWord: (id: string, result: WordResult) => void;
@@ -71,6 +73,16 @@ export const useStore = create<TutorState>((set, get) => ({
 
   recordAttempt: (a) => {
     const state = { ...get().state, attempts: [...get().state.attempts, a] };
+    localStore.setState(state);
+    set({ state });
+  },
+
+  saveConversation: (c) => {
+    const conversations = [
+      ...get().state.conversations.filter((x) => x.id !== c.id),
+      c,
+    ];
+    const state = { ...get().state, conversations };
     localStore.setState(state);
     set({ state });
   },
