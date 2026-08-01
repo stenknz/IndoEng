@@ -23,7 +23,20 @@ function SpeakButton({ text }: { text: string }) {
 }
 
 function isLearned(w: VocabularyWord): boolean {
-  return w.lastReviewed !== null && w.familiarity > 0;
+  return w.lastReviewed !== null;
+}
+
+function mergeStateWord(bank: VocabularyWord, stored: VocabularyWord): VocabularyWord {
+  return {
+    ...bank,
+    familiarity: stored.familiarity,
+    exposures: stored.exposures,
+    correct: stored.correct,
+    mistakes: stored.mistakes,
+    lastReviewed: stored.lastReviewed,
+    nextReview: stored.nextReview,
+    streak: stored.streak,
+  };
 }
 
 function StatusBadge({ learned }: { learned: boolean }) {
@@ -64,8 +77,8 @@ export function VocabularyPage() {
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     const words = WORD_BANK.map((w) => {
-      const learned = state.words[w.id];
-      return learned ? { ...w, ...learned } : w;
+      const stored = state.words[w.id];
+      return stored ? mergeStateWord(w, stored) : w;
     });
     return words.filter((w) => {
       if (category && w.category !== category) return false;
