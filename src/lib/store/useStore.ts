@@ -111,8 +111,16 @@ export const useStore = create<TutorState>((set, get) => ({
 
   bumpWord: (id, result) => {
     const word = scheduler.recordResult(get().state.words[id] ?? emptyWord(id), result);
+    const profile =
+      result === "wrong"
+        ? {
+            ...get().state.profile,
+            recentMistakes: [...get().state.profile.recentMistakes, Date.now()].slice(-5),
+          }
+        : get().state.profile;
     const state = {
       ...get().state,
+      profile,
       words: { ...get().state.words, [id]: word },
     };
     localStore.setState(state);

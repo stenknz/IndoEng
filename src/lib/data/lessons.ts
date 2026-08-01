@@ -17,6 +17,14 @@ export const LESSONS: Lesson[] = [
       "Ya, terima kasih.",
       "Tidak, terima kasih.",
     ],
+    translations: [
+      "Hello, good morning.",
+      "Good morning.",
+      "Thank you.",
+      "You're welcome.",
+      "Yes, thank you.",
+      "No, thank you.",
+    ],
     practice: [
       {
         prompt: "Selamat pagi!",
@@ -58,6 +66,14 @@ export const LESSONS: Lesson[] = [
       "Kamu siapa?",
       "Saya Budi.",
     ],
+    translations: [
+      "What's your name?",
+      "My name is Ana.",
+      "What is your name?",
+      "This is my name.",
+      "Who are you?",
+      "I am Budi.",
+    ],
     practice: [
       {
         prompt: "Siapa nama kamu?",
@@ -96,6 +112,12 @@ export const LESSONS: Lesson[] = [
       "Satu, dua, tiga.",
       "Empat, lima.",
       "Berapa? Lima.",
+    ],
+    translations: [
+      "One, two, three, four, five.",
+      "One, two, three.",
+      "Four, five.",
+      "How many? Five.",
     ],
     practice: [
       {
@@ -138,6 +160,14 @@ export const LESSONS: Lesson[] = [
       "Ayam enak.",
       "Roti enak.",
     ],
+    translations: [
+      "I eat rice.",
+      "Do you eat chicken?",
+      "I eat fish.",
+      "Rice is delicious.",
+      "Chicken is delicious.",
+      "Bread is delicious.",
+    ],
     practice: [
       {
         prompt: "Kamu makan apa?",
@@ -179,6 +209,14 @@ export const LESSONS: Lesson[] = [
       "Kamu mau kopi?",
       "Saya mau minum susu.",
     ],
+    translations: [
+      "I want to drink water.",
+      "Do you want to drink tea?",
+      "I drink coffee.",
+      "Milk is delicious.",
+      "Do you want coffee?",
+      "I want to drink milk.",
+    ],
     practice: [
       {
         prompt: "Kamu mau minum apa?",
@@ -218,6 +256,13 @@ export const LESSONS: Lesson[] = [
       "Kakak saya minum kopi.",
       "Adik saya makan roti.",
       "Ini keluarga saya.",
+    ],
+    translations: [
+      "My mother drinks tea.",
+      "My father eats rice.",
+      "My older sibling drinks coffee.",
+      "My younger sibling eats bread.",
+      "This is my family.",
     ],
     practice: [
       {
@@ -260,6 +305,14 @@ export const LESSONS: Lesson[] = [
       "Ini dapur.",
       "Saya tidur.",
     ],
+    translations: [
+      "This is my house.",
+      "This is my room.",
+      "This is a door.",
+      "This is a window.",
+      "This is a kitchen.",
+      "I sleep.",
+    ],
     practice: [
       {
         prompt: "Ini apa?",
@@ -300,6 +353,14 @@ export const LESSONS: Lesson[] = [
       "Buku ini bagus.",
       "Teman saya suka kopi.",
       "Sangat bagus!",
+    ],
+    translations: [
+      "I like books.",
+      "Do you like tea?",
+      "I really like rice.",
+      "This book is good.",
+      "My friend likes coffee.",
+      "Very good!",
     ],
     practice: [
       {
@@ -342,6 +403,14 @@ export const LESSONS: Lesson[] = [
       "Saya mau beli nasi.",
       "Uang saya.",
     ],
+    translations: [
+      "I want to buy a book.",
+      "I buy things.",
+      "This book is cheap.",
+      "This thing is expensive.",
+      "I want to buy rice.",
+      "My money.",
+    ],
     practice: [
       {
         prompt: "Kamu mau beli apa?",
@@ -382,6 +451,14 @@ export const LESSONS: Lesson[] = [
       "Sate ini enak.",
       "Makanan enak.",
       "Tagihan, terima kasih.",
+    ],
+    translations: [
+      "I order satay.",
+      "I want to order food.",
+      "I want a drink.",
+      "This satay is delicious.",
+      "The food is delicious.",
+      "The bill, please.",
     ],
     practice: [
       {
@@ -424,6 +501,14 @@ export const LESSONS: Lesson[] = [
       "Sekarang malam.",
       "Sekarang pukul tiga.",
     ],
+    translations: [
+      "What time is it?",
+      "It's two o'clock now.",
+      "Today I eat rice.",
+      "It's midday now.",
+      "It's night now.",
+      "It's three o'clock now.",
+    ],
     practice: [
       {
         prompt: "Jam berapa?",
@@ -464,6 +549,14 @@ export const LESSONS: Lesson[] = [
       "Cuaca hari ini cerah.",
       "Cuaca hari ini mendung.",
       "Sekarang hujan.",
+    ],
+    translations: [
+      "Today it's raining.",
+      "Today it's hot.",
+      "Today it's cold.",
+      "The weather today is sunny.",
+      "The weather today is cloudy.",
+      "Now it's raining.",
     ],
     practice: [
       {

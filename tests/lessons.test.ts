@@ -30,4 +30,11 @@ describe("lessons", () => {
       expect(lesson.recall.length).toBeGreaterThanOrEqual(3);
     }
   });
+
+  it("provides an English translation for every scripted sentence", () => {
+    for (const lesson of LESSONS) {
+      expect(lesson.translations, lesson.title).toBeDefined();
+      expect(lesson.translations?.length).toBe(lesson.sentences.length);
+    }
+  });
 });

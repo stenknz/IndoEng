@@ -402,7 +402,13 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
             </ChatBubble>
             {lesson.sentences.map((s, i) => (
               <ChatBubble key={i} kind="tutor">
-                {s}
+                <div>{s}</div>
+                {state.profile.translationMode === "beginner" &&
+                  lesson.translations?.[i] && (
+                    <div className="mt-1 text-xs text-slate-400">
+                      {lesson.translations[i]}
+                    </div>
+                  )}
               </ChatBubble>
             ))}
           </div>

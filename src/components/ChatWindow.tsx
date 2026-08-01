@@ -32,6 +32,10 @@ function TutorBubble({
     translationMode === "beginner",
   );
 
+  useEffect(() => {
+    setShowTranslation(translationMode === "beginner");
+  }, [translationMode]);
+
   const hasActions = Boolean(message.hint || message.translation);
 
   return (

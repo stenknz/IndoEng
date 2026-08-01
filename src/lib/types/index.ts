@@ -66,6 +66,7 @@ export interface Lesson {
   newWordIds: string[];
   warmUpIds: string[];
   sentences: string[];
+  translations?: string[];
   practice: PracticeItem[];
   recall: RecallItem[];
   reviewNote: string;
