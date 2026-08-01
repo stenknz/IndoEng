@@ -24,8 +24,9 @@ function withinBudget(ctx: TutorContext, text: string): string {
 
 // The active practice item is derived from the message history: the last tutor
 // message that (exactly) asks a practice prompt. The longest matching prompt
-// wins so "Berapa?" never shadows "Satu, dua, tiga. Berapa?"; ties between
-// identical prompts (e.g. two "Ini apa?" items) resolve to the latest item.
+// wins so "Berapa?" never shadows "Satu, dua, tiga. Berapa?". When prompts tie
+// (e.g. two "Ini apa?" items), the hint stored on the tutor message identifies
+// which item was actually asked.
 function findActiveItem(ctx: TutorContext): { index: number; item: PracticeItem } | null {
   const practice = ctx.lesson.practice;
   if (practice.length === 0) return null;
@@ -35,10 +36,10 @@ function findActiveItem(ctx: TutorContext): { index: number; item: PracticeItem 
     let best: { index: number; item: PracticeItem } | null = null;
     for (let j = 0; j < practice.length; j++) {
       const p = practice[j];
-      if (m.content === p.prompt || m.content.endsWith(p.prompt)) {
-        if (!best || p.prompt.length >= best.item.prompt.length) {
-          best = { index: j, item: p };
-        }
+      if (m.content !== p.prompt && !m.content.endsWith(p.prompt)) continue;
+      if (m.hint !== undefined && m.hint !== p.hint) continue;
+      if (!best || p.prompt.length >= best.item.prompt.length) {
+        best = { index: j, item: p };
       }
     }
     if (best) return best;

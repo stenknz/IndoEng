@@ -25,6 +25,11 @@ describe("matchAnswer", () => {
     expect(matchAnswer("ya", ["ya"]).correct).toBe(true);
     expect(matchAnswer("tidak", ["tidak"]).correct).toBe(true);
   });
+
+  it("matches multi-word expected phrases", () => {
+    expect(matchAnswer("Selamat pagi", ["selamat pagi"]).correct).toBe(true);
+    expect(matchAnswer("Selamat pagi Kak", ["selamat pagi"]).correct).toBe(true);
+  });
 });
 
 describe("buildCorrection", () => {
@@ -74,6 +79,23 @@ describe("scriptedProvider", () => {
     const right = await scriptedProvider.generate({ state, lesson, messages: msgs2, input: "Saya makan nasi", mode: "lesson" });
     expect(right.text).toContain("Bagus!");
     expect(right.expectedWords).toEqual(["makan", "ayam"]);
+  });
+
+  it("accepts the correct answer after a re-ask on duplicate prompts", async () => {
+    const state = createInitialState("Sten");
+    const lesson = LESSONS[6];
+    const q0 = await scriptedProvider.generate({ state, lesson, messages: [], mode: "lesson" });
+    expect(q0.expectedWords).toEqual(["rumah"]);
+
+    const msgs = [{ id: "t1", kind: "tutor" as const, content: q0.text, timestamp: 1, hint: q0.hint }];
+    const wrong = await scriptedProvider.generate({ state, lesson, messages: msgs, input: "Saya makan nasi", mode: "lesson" });
+    expect(wrong.text).toContain("Coba lagi");
+    expect(wrong.expectedWords).toEqual(["rumah"]);
+
+    const msgs2 = [...msgs, { id: "t2", kind: "tutor" as const, content: wrong.text, timestamp: 2, hint: wrong.hint }];
+    const right = await scriptedProvider.generate({ state, lesson, messages: msgs2, input: "rumah", mode: "lesson" });
+    expect(right.text).toContain("Bagus!");
+    expect(right.expectedWords).toEqual(["pintu"]);
   });
 
   it("asks a conversation question using a known word", async () => {
