@@ -25,6 +25,7 @@ export function ConversationPage() {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState("");
   const [startedAt, setStartedAt] = useState(0);
 
@@ -85,6 +86,7 @@ export function ConversationPage() {
     const text = input.trim();
     if (!text || busy || !conversationId) return;
     setBusy(true);
+    setError(null);
     setInput("");
     const learnerMsg: ConversationMessage = {
       id: crypto.randomUUID(),
@@ -94,20 +96,26 @@ export function ConversationPage() {
     };
     const history = [...messages, learnerMsg];
     setMessages(history);
-    const out = await engine.respond(
-      useStore.getState().state,
-      LESSONS[0],
-      history,
-      text,
-      "conversation",
-    );
-    const updated = [...history, out.message];
-    setMessages(updated);
-    for (const a of out.attempts) recordAttempt(a);
-    for (const [id, res] of Object.entries(out.wordsToRecord)) bumpWord(id, res);
-    updateProfile(out.adaptedProfile);
-    persistConversation(conversationId, startedAt, updated);
-    setBusy(false);
+    try {
+      const out = await engine.respond(
+        useStore.getState().state,
+        LESSONS[0],
+        history,
+        text,
+        "conversation",
+      );
+      const updated = [...history, out.message];
+      setMessages(updated);
+      for (const a of out.attempts) recordAttempt(a);
+      for (const [id, res] of Object.entries(out.wordsToRecord)) bumpWord(id, res);
+      updateProfile(out.adaptedProfile);
+      persistConversation(conversationId, startedAt, updated);
+    } catch {
+      setMessages(messages);
+      setError("Ada masalah. Coba lagi. 🙏");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function handleNew() {
@@ -178,6 +186,11 @@ export function ConversationPage() {
 
       {busy && (
         <div className="px-1 text-xs text-slate-400">Kak sedang berpikir…</div>
+      )}
+      {error && (
+        <div className="rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          {error}
+        </div>
       )}
 
       <form onSubmit={handleSend} className="flex gap-2">
