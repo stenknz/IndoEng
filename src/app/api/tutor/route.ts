@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         model,
         messages: llmMessages,
         temperature: 0.7,
-        max_tokens: 300,
+        max_tokens: 2048,
       }),
     });
     if (!res.ok) {
