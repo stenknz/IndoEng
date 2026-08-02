@@ -10,6 +10,7 @@ export interface LearningProfile {
   level: 0 | 1 | 2 | 3 | 4;
   translationMode: TranslationMode;
   pronunciationOn: boolean;
+  aiTutorOn: boolean;
   vocabKnowledge: number;
   grammarKnowledge: number;
   conversationAbility: number;

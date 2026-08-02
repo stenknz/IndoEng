@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store/useStore";
 import type { TranslationMode } from "@/lib/types";
 
@@ -26,6 +26,22 @@ export function SettingsPage() {
   const state = useStore((s) => s.state);
   const [saved, setSaved] = useState(false);
   const [resetDone, setResetDone] = useState(false);
+  const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/tutor")
+      .then((r) => r.json())
+      .then((d: { configured?: boolean }) => {
+        if (!cancelled) setAiConfigured(Boolean(d.configured));
+      })
+      .catch(() => {
+        if (!cancelled) setAiConfigured(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleNameChange = (name: string) => {
     useStore.getState().setUser(name);
@@ -39,6 +55,10 @@ export function SettingsPage() {
 
   const handlePronunciationChange = (on: boolean) => {
     useStore.getState().updateProfile({ pronunciationOn: on });
+  };
+
+  const handleAiTutorChange = (on: boolean) => {
+    useStore.getState().updateProfile({ aiTutorOn: on });
   };
 
   const handleReset = () => {
@@ -118,6 +138,43 @@ export function SettingsPage() {
             );
           })}
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+          AI Tutor
+        </h2>
+        <div className="mt-3 flex items-center justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            Use Kak's AI tutor (OpenCode Go) for free conversation.
+          </p>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={state.profile.aiTutorOn}
+            onClick={() => handleAiTutorChange(!state.profile.aiTutorOn)}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+              state.profile.aiTutorOn ? "bg-brand-600" : "bg-slate-300"
+            }`}
+          >
+            <span
+              className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                state.profile.aiTutorOn ? "left-6" : "left-1"
+              }`}
+            />
+          </button>
+        </div>
+        {aiConfigured === false && (
+          <p className="mt-3 rounded-xl bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+            Belum aktif. Set OPENCODE_GO_API_KEY di file .env.local lalu mulai
+            ulang server. Lihat README untuk petunjuk.
+          </p>
+        )}
+        {aiConfigured === true && state.profile.aiTutorOn && (
+          <p className="mt-3 text-sm font-medium text-emerald-600">
+            AI tutor aktif untuk percakapan. ✓
+          </p>
+        )}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

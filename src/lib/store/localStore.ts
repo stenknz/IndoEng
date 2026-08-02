@@ -10,6 +10,7 @@ export function createInitialState(name: string): LearnerState {
       level: 0,
       translationMode: "beginner",
       pronunciationOn: true,
+      aiTutorOn: false,
       vocabKnowledge: 0,
       grammarKnowledge: 0,
       conversationAbility: 0,

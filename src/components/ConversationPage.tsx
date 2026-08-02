@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store/useStore";
 import { TutorEngine } from "@/lib/engine/engine";
+import { autoProvider } from "@/lib/engine/autoProvider";
 import { metWordIds } from "@/lib/difficulty/learnerModel";
 import { LESSONS } from "@/lib/data/lessons";
 import { ChatWindow } from "@/components/ChatWindow";
@@ -18,7 +19,7 @@ export function ConversationPage() {
   const saveConversation = useStore((s) => s.saveConversation);
 
   const engineRef = useRef<TutorEngine | null>(null);
-  if (!engineRef.current) engineRef.current = new TutorEngine();
+  if (!engineRef.current) engineRef.current = new TutorEngine(autoProvider);
   const engine = engineRef.current;
 
   const [ready, setReady] = useState(false);
