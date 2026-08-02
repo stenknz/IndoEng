@@ -136,7 +136,7 @@ export function ConversationPage() {
     );
   }
 
-  if (metWordIds(state.words).length === 0) {
+  if (!state.profile.aiTutorOn && metWordIds(state.words).length === 0) {
     return (
       <div className="space-y-6">
         <header>
@@ -171,7 +171,9 @@ export function ConversationPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Ngobrol dengan Kak 💬</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Kak cuma pakai kata-kata yang kamu sudah tahu.
+            {state.profile.aiTutorOn
+              ? "Kak bisa ngobrol apa saja — pelan-pelan dan sabar."
+              : "Kak cuma pakai kata-kata yang kamu sudah tahu."}
           </p>
         </div>
         <button

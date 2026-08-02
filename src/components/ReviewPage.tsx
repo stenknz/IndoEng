@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store/useStore";
 import { scheduler } from "@/lib/srs/scheduler";
 import { matchAnswer } from "@/lib/engine/matcher";
-import { browserTTS } from "@/lib/audio/browserTTS";
 import { WORD_BANK } from "@/lib/data/words";
+import { SpeakButton } from "@/components/SpeakButton";
 import type { VocabularyWord } from "@/lib/types";
 
 function mergeStateWord(bank: VocabularyWord, stored: VocabularyWord): VocabularyWord {
@@ -25,22 +25,6 @@ function mergeStateWord(bank: VocabularyWord, stored: VocabularyWord): Vocabular
 function overlayFromBank(stored: VocabularyWord): VocabularyWord {
   const bank = WORD_BANK.find((w) => w.id === stored.id);
   return bank ? mergeStateWord(bank, stored) : stored;
-}
-
-function SpeakButton({ text }: { text: string }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted || !browserTTS.supported) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => browserTTS.speak(text)}
-      aria-label={`Dengarkan ${text}`}
-      className="rounded-full bg-brand-50 p-2.5 text-base text-brand-700 transition hover:bg-brand-100"
-    >
-      🔊
-    </button>
-  );
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {

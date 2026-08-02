@@ -1,24 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { browserTTS } from "@/lib/audio/browserTTS";
+import { SpeakButton } from "@/components/SpeakButton";
 import type { ConversationMessage, TranslationMode } from "@/lib/types";
-
-function SpeakButton({ text }: { text: string }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted || !browserTTS.supported) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => browserTTS.speak(text)}
-      aria-label={`Dengarkan ${text}`}
-      className="rounded-full bg-brand-50 p-2 text-base text-brand-700 transition hover:bg-brand-100"
-    >
-      🔊
-    </button>
-  );
-}
 
 function TutorBubble({
   message,

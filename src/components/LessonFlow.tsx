@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store/useStore";
 import { TutorEngine } from "@/lib/engine/engine";
 import { matchAnswer } from "@/lib/engine/matcher";
-import { browserTTS } from "@/lib/audio/browserTTS";
 import { WORD_BANK } from "@/lib/data/words";
+import { SpeakButton } from "@/components/SpeakButton";
 import type {
   ConversationMessage,
   Lesson,
@@ -36,22 +36,6 @@ const STEP_LABELS: Record<Step, string> = {
 
 function wordById(id: string): VocabularyWord | undefined {
   return WORD_BANK.find((w) => w.id === id);
-}
-
-function SpeakButton({ text }: { text: string }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted || !browserTTS.supported) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => browserTTS.speak(text)}
-      aria-label={`Dengarkan ${text}`}
-      className="rounded-full bg-brand-50 p-2.5 text-base text-brand-700 transition hover:bg-brand-100"
-    >
-      🔊
-    </button>
-  );
 }
 
 function ChatBubble({

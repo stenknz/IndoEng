@@ -2,21 +2,32 @@ import type { SpeechProvider } from "@/lib/audio/SpeechProvider";
 
 const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
-function pickVoice(): SpeechSynthesisVoice | undefined {
-  if (!hasSpeech) return undefined;
+let idVoice: SpeechSynthesisVoice | undefined;
+
+function refreshVoices(): void {
+  if (!hasSpeech) return;
   const voices = window.speechSynthesis.getVoices();
-  return voices.find((v) => v.lang.toLowerCase().startsWith("id")) ?? undefined;
+  idVoice = voices.find((v) => v.lang.toLowerCase().startsWith("id"));
+}
+
+if (hasSpeech) {
+  refreshVoices();
+  window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
 }
 
 export const browserTTS: SpeechProvider = {
   supported: hasSpeech,
-  speak(text: string): void {
-    if (!hasSpeech) return;
+  get voiceAvailable(): boolean {
+    return hasSpeech && Boolean(idVoice);
+  },
+  speak(text: string): boolean {
+    // Never read Indonesian with a non-Indonesian voice — that sounds wrong.
+    if (!hasSpeech || !idVoice) return false;
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "id-ID";
-    const voice = pickVoice();
-    if (voice) utter.voice = voice;
+    utter.voice = idVoice;
     window.speechSynthesis.speak(utter);
+    return true;
   },
 };

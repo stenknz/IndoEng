@@ -1,4 +1,5 @@
 export interface SpeechProvider {
-  speak(text: string): void;
+  speak(text: string): boolean;
   supported: boolean;
+  voiceAvailable: boolean;
 }
