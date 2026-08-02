@@ -312,7 +312,7 @@ export const WORD_BANK: VocabularyWord[] = [
     id: "teh",
     indonesian: "teh",
     english: "tea",
-    pronunciation: "TAY",
+    pronunciation: "TEH",
     example: "Kamu suka teh?",
     exampleTranslation: "Do you like tea?",
     category: "drinks",

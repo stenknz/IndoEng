@@ -1,4 +1,4 @@
-# Indo Tutor
+# Kak — Indonesian Tutor
 
 A patient Indonesian tutor that adapts to you. Built with Next.js, TypeScript, Tailwind CSS, and Zustand.
 
@@ -22,6 +22,7 @@ npm test
 End-to-end tests (Playwright):
 
 ```bash
+npx playwright install
 npm run test:e2e
 ```
 

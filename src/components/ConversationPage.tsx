@@ -46,6 +46,7 @@ export function ConversationPage() {
     const seed = await engine.startLesson(useStore.getState().state, LESSONS[0]);
     const id = crypto.randomUUID();
     const start = Date.now();
+    setError(null);
     setConversationId(id);
     setStartedAt(start);
     setMessages(seed);
@@ -161,7 +162,7 @@ export function ConversationPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-10rem)] flex-col gap-4">
+    <div className="flex h-[calc(100dvh-10rem)] flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Ngobrol dengan Kak 💬</h1>

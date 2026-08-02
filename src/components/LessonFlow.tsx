@@ -285,7 +285,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between gap-4">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
             {lesson.emoji} {lesson.title}
