@@ -1,7 +1,7 @@
 import { matchAnswer } from "@/lib/engine/matcher";
 import { buildCorrection } from "@/lib/engine/engine";
 import type { LanguageModelProvider, TutorContext, TutorResponse } from "@/lib/engine/provider";
-import { computeLearnerStats, knownWordIds } from "@/lib/difficulty/learnerModel";
+import { computeLearnerStats, metWordIds } from "@/lib/difficulty/learnerModel";
 import { simplifyUtterance } from "@/lib/difficulty/simplify";
 import type { PracticeItem, VocabularyWord } from "@/lib/types";
 
@@ -11,7 +11,7 @@ const KNOWN_OBJECTS = new Set(["rumah", "pintu", "kamar", "jendela", "dapur", "b
 const KNOWN_VERBS = new Set(["makan", "minum", "mau", "suka", "beli", "pesan", "tidur"]);
 
 function knownWords(ctx: TutorContext): VocabularyWord[] {
-  return knownWordIds(ctx.state.words)
+  return metWordIds(ctx.state.words)
     .map((id) => ctx.state.words[id])
     .filter(Boolean);
 }
@@ -107,7 +107,12 @@ function questionAt(ctx: TutorContext, step: number): TutorResponse {
   const object = words.find((w) => KNOWN_OBJECTS.has(w.id));
   const verb = words.find((w) => KNOWN_VERBS.has(w.id) && w.id !== "makan") ?? words.find((w) => KNOWN_VERBS.has(w.id));
   const anyWord = words.length > 0 ? words[step % words.length] : undefined;
-  const fallback: TutorResponse = { text: "Ini apa?", expectedWords: [], expectAnswer: true };
+  const fallback: TutorResponse = {
+    text: "Ini apa?",
+    hint: "Kamu bisa bilang: Ini …",
+    expectedWords: [],
+    expectAnswer: true,
+  };
 
   switch (step % 6) {
     case 0:
@@ -137,12 +142,37 @@ function questionAt(ctx: TutorContext, step: number): TutorResponse {
   }
 }
 
+// The active question index is the number of correctly-answered turns so far.
+// Every "Bagus!" reply advances it; corrections re-ask the same question. This
+// is deterministic in the message history so the question can be reconstructed
+// when the next input arrives.
+function conversationStep(ctx: TutorContext): number {
+  return ctx.messages.filter(
+    (m) => m.kind === "tutor" && m.content.startsWith("Bagus!"),
+  ).length;
+}
+
 async function conversation(ctx: TutorContext): Promise<TutorResponse> {
-  const step = ctx.messages.filter((m) => m.kind === "learner").length;
+  const step = conversationStep(ctx);
   const active = questionAt(ctx, step);
 
   if (!ctx.input) {
     return { ...active, text: withinBudget(ctx, active.text) };
+  }
+
+  // The opening seeds are greetings that ask nothing. The first unprompted
+  // learner turn is acknowledged and question 0 is displayed without scoring
+  // it, so an answer is never graded against a question that wasn't asked.
+  const questionAsked = ctx.messages.some(
+    (m) => m.kind === "tutor" && m.hint !== undefined,
+  );
+  if (!questionAsked) {
+    return {
+      text: withinBudget(ctx, `Halo! Ayo ngobrol. ${active.text}`),
+      hint: active.hint,
+      expectedWords: undefined,
+      expectAnswer: true,
+    };
   }
 
   const result = matchAnswer(ctx.input, active.expectedWords ?? []);

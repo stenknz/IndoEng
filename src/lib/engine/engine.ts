@@ -44,19 +44,21 @@ export class TutorEngine {
     const wordsToRecord: Record<string, WordResult> = {};
     if (input) {
       const expected = res.expectedWords ?? [];
-      const result = matchAnswer(input, expected);
-      attempts.push({
-        id: crypto.randomUUID(),
-        ts: Date.now(),
-        kind: mode,
-        prompt: ctx.messages[ctx.messages.length - 1]?.content ?? "",
-        learnerAnswer: input,
-        expected: expected.join(" "),
-        correct: result.correct,
-        wordIds: expected,
-      });
-      for (const id of expected) {
-        wordsToRecord[id] = result.correct === true ? "correct" : result.correct === "partial" ? "partial" : "wrong";
+      if (expected.length > 0) {
+        const result = matchAnswer(input, expected);
+        attempts.push({
+          id: crypto.randomUUID(),
+          ts: Date.now(),
+          kind: mode,
+          prompt: ctx.messages[ctx.messages.length - 1]?.content ?? "",
+          learnerAnswer: input,
+          expected: expected.join(" "),
+          correct: result.correct,
+          wordIds: expected,
+        });
+        for (const id of expected) {
+          wordsToRecord[id] = result.correct === true ? "correct" : result.correct === "partial" ? "partial" : "wrong";
+        }
       }
     }
     // persist adaptation hint into state via return value; the caller applies adaptProfile

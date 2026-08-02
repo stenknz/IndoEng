@@ -37,3 +37,48 @@ describe("bumpWord", () => {
     expect(useStore.getState().state.profile.recentMistakes).toHaveLength(0);
   });
 });
+
+describe("recordAttempt", () => {
+  function attempt(correct: boolean | "partial") {
+    return {
+      id: crypto.randomUUID(),
+      ts: Date.now(),
+      kind: "lesson" as const,
+      prompt: "Selamat pagi!",
+      learnerAnswer: "selamat pagi",
+      expected: "selamat pagi",
+      correct,
+      wordIds: ["selamat pagi"],
+    };
+  }
+
+  it("increments consecutiveCorrect and sets lastAnswerAccuracy on a correct answer", () => {
+    useStore.getState().resetAll();
+    useStore.getState().updateProfile({ consecutiveCorrect: 2 });
+    useStore.getState().recordAttempt(attempt(true));
+    const p = useStore.getState().state.profile;
+    expect(p.consecutiveCorrect).toBe(3);
+    expect(p.lastAnswerAccuracy).toBe(1);
+  });
+
+  it("resets consecutiveCorrect on a wrong or partial answer", () => {
+    useStore.getState().resetAll();
+    useStore.getState().updateProfile({ consecutiveCorrect: 3 });
+    useStore.getState().recordAttempt(attempt(false));
+    let p = useStore.getState().state.profile;
+    expect(p.consecutiveCorrect).toBe(0);
+    expect(p.lastAnswerAccuracy).toBe(0);
+
+    useStore.getState().updateProfile({ consecutiveCorrect: 3 });
+    useStore.getState().recordAttempt(attempt("partial"));
+    p = useStore.getState().state.profile;
+    expect(p.consecutiveCorrect).toBe(0);
+    expect(p.lastAnswerAccuracy).toBe(0);
+  });
+
+  it("appends the attempt to the attempts log", () => {
+    useStore.getState().resetAll();
+    useStore.getState().recordAttempt(attempt(true));
+    expect(useStore.getState().state.attempts).toHaveLength(1);
+  });
+});

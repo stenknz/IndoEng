@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeLearnerStats, adaptProfile, knownWordIds } from "@/lib/difficulty/learnerModel";
+import {
+  computeLearnerStats,
+  adaptProfile,
+  knownWordIds,
+  metWordIds,
+} from "@/lib/difficulty/learnerModel";
 import { simplifyUtterance } from "@/lib/difficulty/simplify";
 import { createInitialState } from "@/lib/store/localStore";
 import type { PracticeAttempt } from "@/lib/types";
@@ -12,6 +17,21 @@ describe("learner model", () => {
       nasi: { id: "nasi", indonesian: "nasi", english: "rice", pronunciation: "", example: "", exampleTranslation: "", category: "", level: 0, familiarity: 0, exposures: 0, correct: 0, mistakes: 0, lastReviewed: null, nextReview: null, streak: 0 },
     };
     expect(knownWordIds(s.words)).toEqual(["air"]);
+  });
+
+  it("counts met words by lastReviewed, independent of familiarity", () => {
+    const s = createInitialState("Sten");
+    s.words = {
+      air: {
+        id: "air", indonesian: "air", english: "water", pronunciation: "", example: "", exampleTranslation: "",
+        category: "", level: 0, familiarity: 0, exposures: 1, correct: 1, mistakes: 0, lastReviewed: 123, nextReview: null, streak: 1,
+      },
+      nasi: {
+        id: "nasi", indonesian: "nasi", english: "rice", pronunciation: "", example: "", exampleTranslation: "",
+        category: "", level: 0, familiarity: 0.8, exposures: 1, correct: 1, mistakes: 0, lastReviewed: null, nextReview: null, streak: 1,
+      },
+    };
+    expect(metWordIds(s.words)).toEqual(["air"]);
   });
 
   it("gates difficulty increase on consistent performance", () => {

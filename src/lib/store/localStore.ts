@@ -42,7 +42,7 @@ export function loadState(): LearnerState | null {
 
 export const localStore: Store = {
   getState(): LearnerState {
-    return loadState() ?? createInitialState("Sten");
+    return loadState() ?? createInitialState("Kawan");
   },
   setState(partial: Partial<LearnerState>): void {
     if (typeof window === "undefined") return;

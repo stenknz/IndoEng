@@ -9,6 +9,7 @@ import type {
 import { createInitialState, localStore } from "@/lib/store/localStore";
 import type { Store } from "@/lib/store/Store";
 import { scheduler } from "@/lib/srs/scheduler";
+import { WORD_BANK } from "@/lib/data/words";
 
 export type WordResult = "correct" | "partial" | "wrong";
 
@@ -48,7 +49,7 @@ function emptyWord(id: string): VocabularyWord {
 }
 
 export const useStore = create<TutorState>((set, get) => ({
-  state: createInitialState("Sten"),
+  state: createInitialState("Kawan"),
   hydrated: false,
 
   hydrate: () => {
@@ -72,7 +73,17 @@ export const useStore = create<TutorState>((set, get) => ({
   },
 
   recordAttempt: (a) => {
-    const state = { ...get().state, attempts: [...get().state.attempts, a] };
+    const profile = {
+      ...get().state.profile,
+      consecutiveCorrect:
+        a.correct === true ? get().state.profile.consecutiveCorrect + 1 : 0,
+      lastAnswerAccuracy: a.correct === true ? 1 : 0,
+    };
+    const state = {
+      ...get().state,
+      profile,
+      attempts: [...get().state.attempts, a],
+    };
     localStore.setState(state);
     set({ state });
   },
@@ -128,11 +139,18 @@ export const useStore = create<TutorState>((set, get) => ({
   },
 
   touchWord: (id) => {
+    const bank = WORD_BANK.find((w) => w.id === id);
     const prev = get().state.words[id];
-    if (!prev) return;
+    const next: VocabularyWord = {
+      ...emptyWord(id),
+      ...(bank ?? {}),
+      ...(prev ?? {}),
+      lastReviewed: Date.now(),
+      exposures: (prev?.exposures ?? 0) + 1,
+    };
     const state = {
       ...get().state,
-      words: { ...get().state.words, [id]: { ...prev, lastReviewed: Date.now() } },
+      words: { ...get().state.words, [id]: next },
     };
     localStore.setState(state);
     set({ state });

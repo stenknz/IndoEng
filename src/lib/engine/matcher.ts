@@ -4,7 +4,7 @@ export interface MatchResult {
 }
 
 function normalize(s: string): string {
-  return s.toLowerCase().trim().replace(/[.,!?]/g, "");
+  return s.toLowerCase().trim().replace(/-/g, " ").replace(/[.,!?]/g, "");
 }
 
 export function matchAnswer(

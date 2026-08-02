@@ -30,6 +30,11 @@ describe("matchAnswer", () => {
     expect(matchAnswer("Selamat pagi", ["selamat pagi"]).correct).toBe(true);
     expect(matchAnswer("Selamat pagi Kak", ["selamat pagi"]).correct).toBe(true);
   });
+
+  it("matches hyphenated words with or without the hyphen", () => {
+    expect(matchAnswer("sama sama", ["sama-sama"]).correct).toBe(true);
+    expect(matchAnswer("sama-sama", ["sama-sama"]).correct).toBe(true);
+  });
 });
 
 describe("buildCorrection", () => {
@@ -98,19 +103,62 @@ describe("scriptedProvider", () => {
     expect(right.expectedWords).toEqual(["rumah"]);
   });
 
-  it("asks a conversation question using a known word", async () => {
+  it("acknowledges the first unprompted turn and asks a question without scoring", async () => {
     const state = createInitialState("Sten");
     state.words = {
-      nasi: {
-        id: "nasi", indonesian: "nasi", english: "rice", pronunciation: "", example: "", exampleTranslation: "",
-        category: "food", level: 0, familiarity: 0.8, exposures: 2, correct: 2, mistakes: 0,
-        lastReviewed: null, nextReview: null, streak: 2,
+      rumah: {
+        id: "rumah", indonesian: "rumah", english: "house", pronunciation: "", example: "", exampleTranslation: "",
+        category: "house", level: 0, familiarity: 0.12, exposures: 1, correct: 1, mistakes: 0,
+        lastReviewed: 1, nextReview: null, streak: 1,
       },
     };
-    const messages = [{ id: "1", kind: "learner" as const, content: "Saya makan nasi", timestamp: 1 }];
-    const res = await scriptedProvider.generate({ state, lesson: LESSONS[0], messages, mode: "conversation" });
-    expect(res.text).toContain("nasi");
-    expect(res.expectAnswer).toBe(true);
+    const seed = [
+      { id: "s1", kind: "tutor" as const, content: "Halo! 👋", timestamp: 1 },
+      { id: "s2", kind: "tutor" as const, content: "Hari ini kita belajar: 🏠 My House", timestamp: 2 },
+    ];
+    const opening = await scriptedProvider.generate({
+      state,
+      lesson: LESSONS[6],
+      messages: seed,
+      input: "halo",
+      mode: "conversation",
+    });
+    expect(opening.expectedWords).toBeUndefined();
+    expect(opening.text).toContain("Ini apa?");
+    expect(opening.hint).toBeDefined();
+  });
+
+  it("scores the next answer against the displayed question", async () => {
+    const engine = new TutorEngine();
+    const state = createInitialState("Sten");
+    state.words = {
+      rumah: {
+        id: "rumah", indonesian: "rumah", english: "house", pronunciation: "", example: "", exampleTranslation: "",
+        category: "house", level: 0, familiarity: 0.12, exposures: 1, correct: 1, mistakes: 0,
+        lastReviewed: 1, nextReview: null, streak: 1,
+      },
+    };
+    const seed = [
+      { id: "s1", kind: "tutor" as const, content: "Halo! 👋", timestamp: 1 },
+      { id: "s2", kind: "tutor" as const, content: "Hari ini kita belajar: 🏠 My House", timestamp: 2 },
+    ];
+    const opening = await scriptedProvider.generate({
+      state,
+      lesson: LESSONS[6],
+      messages: seed,
+      input: "halo",
+      mode: "conversation",
+    });
+    const history = [
+      ...seed,
+      { id: "o1", kind: "tutor" as const, content: opening.text, hint: opening.hint, timestamp: 3 },
+      { id: "l1", kind: "learner" as const, content: "halo", timestamp: 4 },
+    ];
+    const out = await engine.respond(state, LESSONS[6], history, "rumah", "conversation");
+    expect(out.attempts).toHaveLength(1);
+    expect(out.attempts[0].correct).toBe(true);
+    expect(out.attempts[0].wordIds).toEqual(["rumah"]);
+    expect(out.wordsToRecord).toEqual({ rumah: "correct" });
   });
 });
 
@@ -159,5 +207,20 @@ describe("TutorEngine", () => {
     expect(out.attempts[0].correct).toBe(false);
     expect(out.attempts[0].wordIds).toEqual(["selamat pagi"]);
     expect(out.wordsToRecord).toEqual({ "selamat pagi": "wrong" });
+  });
+
+  it("does not create an attempt or record words when the reply has no expected words", async () => {
+    const stubProvider = {
+      generate: async () => ({
+        text: "Bagus! Kamu sudah selesai. Sampai jumpa lagi!",
+        expectAnswer: false,
+        expectedWords: [] as string[],
+      }),
+    };
+    const engine = new TutorEngine(stubProvider);
+    const state = createInitialState("Sten");
+    const out = await engine.respond(state, LESSONS[0], [], "halo", "lesson");
+    expect(out.attempts).toHaveLength(0);
+    expect(out.wordsToRecord).toEqual({});
   });
 });

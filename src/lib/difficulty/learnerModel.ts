@@ -17,6 +17,12 @@ export function knownWordIds(
     .map((w) => w.id);
 }
 
+export function metWordIds(words: Record<string, VocabularyWord>): string[] {
+  return Object.values(words)
+    .filter((w) => w.lastReviewed !== null)
+    .map((w) => w.id);
+}
+
 export function computeLearnerStats(
   words: Record<string, VocabularyWord>,
   attempts: PracticeAttempt[],
