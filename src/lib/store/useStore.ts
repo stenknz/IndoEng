@@ -141,10 +141,21 @@ export const useStore = create<TutorState>((set, get) => ({
   touchWord: (id) => {
     const bank = WORD_BANK.find((w) => w.id === id);
     const prev = get().state.words[id];
+    const tracking = prev
+      ? {
+          familiarity: prev.familiarity,
+          exposures: prev.exposures,
+          correct: prev.correct,
+          mistakes: prev.mistakes,
+          lastReviewed: prev.lastReviewed,
+          nextReview: prev.nextReview,
+          streak: prev.streak,
+        }
+      : {};
     const next: VocabularyWord = {
       ...emptyWord(id),
       ...(bank ?? {}),
-      ...(prev ?? {}),
+      ...tracking,
       lastReviewed: Date.now(),
       exposures: (prev?.exposures ?? 0) + 1,
     };
