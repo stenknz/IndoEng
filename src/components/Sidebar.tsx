@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store/useStore";
 import { LevelBar } from "@/components/LevelBar";
-import { knownWordIds } from "@/lib/difficulty/learnerModel";
+import { metWordIds } from "@/lib/difficulty/learnerModel";
 import { WORD_BANK } from "@/lib/data/words";
 
 const NAV_ITEMS = [
@@ -21,7 +21,7 @@ export function Sidebar() {
   const words = useStore((s) => s.state.words);
   const level = useStore((s) => s.state.profile.level);
 
-  const learned = knownWordIds(words).length;
+  const learned = metWordIds(words).length;
   const progress = Math.min(1, learned / WORD_BANK.length);
 
   const linkClass = (active: boolean) =>

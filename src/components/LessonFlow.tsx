@@ -85,6 +85,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   const setLessonProgress = useStore((s) => s.setLessonProgress);
   const bumpWord = useStore((s) => s.bumpWord);
   const updateProfile = useStore((s) => s.updateProfile);
+  const touchWord = useStore((s) => s.touchWord);
 
   const engineRef = useRef<TutorEngine | null>(null);
   if (!engineRef.current) engineRef.current = new TutorEngine();
@@ -92,6 +93,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
 
   const startedAt = useRef(Date.now());
   const touchedRef = useRef<Set<string>>(new Set());
+  const finishingRef = useRef(false);
 
   const [step, setStep] = useState<Step>("warmup");
   const [mistakes, setMistakes] = useState(0);
@@ -104,6 +106,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   const [practiceBusy, setPracticeBusy] = useState(false);
   const [practiceFeedback, setPracticeFeedback] = useState<string | null>(null);
   const [practiceFeedbackType, setPracticeFeedbackType] = useState<"ok" | "warn" | "err" | null>(null);
+  const [practiceError, setPracticeError] = useState<string | null>(null);
 
   const [recallIndex, setRecallIndex] = useState(0);
   const [recallInput, setRecallInput] = useState("");
@@ -146,6 +149,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
     const input = practiceInput.trim();
     if (!input || practiceBusy || practiceFeedbackType === "ok") return;
     setPracticeBusy(true);
+    setPracticeError(null);
     const item = lesson.practice[practiceIndex];
     const learnerMsg: ConversationMessage = {
       id: crypto.randomUUID(),
@@ -154,38 +158,46 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       timestamp: Date.now(),
     };
     const history = [...practiceMessages, learnerMsg];
-    const out = await engine.respond(useStore.getState().state, lesson, history, input, "lesson");
-    const updated = [...history, out.message];
-    setPracticeMessages(updated);
-    setPracticeInput("");
-    for (const a of out.attempts) recordAttempt(a);
-    for (const [id, res] of Object.entries(out.wordsToRecord)) {
-      touchedRef.current.add(id);
-      bumpWord(id, res);
-    }
-    updateProfile(out.adaptedProfile);
-    const result = out.attempts[0]?.correct;
-    setTotalAttempts((t) => t + 1);
-    if (result === true) {
-      setCorrectCount((c) => c + 1);
-      setPracticeFeedbackType("ok");
-      setPracticeFeedback("Bagus! 🙂");
-      setPracticeBusy(false);
-      const idx = practiceIndex;
-      setTimeout(() => {
-        if (idx + 1 < lesson.practice.length) {
-          setPracticeIndex(idx + 1);
-          setPracticeMessages(makePracticeMessages(idx + 1));
-          setPracticeFeedback(null);
-          setPracticeFeedbackType(null);
-        } else {
-          goToRecall();
-        }
-      }, 900);
-    } else {
-      setMistakes((m) => m + 1);
-      setPracticeFeedbackType(result === "partial" ? "warn" : "err");
-      setPracticeFeedback(out.message.content);
+    try {
+      const out = await engine.respond(useStore.getState().state, lesson, history, input, "lesson");
+      const updated = [...history, out.message];
+      setPracticeMessages(updated);
+      setPracticeInput("");
+      for (const a of out.attempts) recordAttempt(a);
+      for (const [id, res] of Object.entries(out.wordsToRecord)) {
+        touchedRef.current.add(id);
+        bumpWord(id, res);
+      }
+      updateProfile({
+        currentDifficulty: out.adaptedProfile.currentDifficulty,
+        level: out.adaptedProfile.level,
+      });
+      const result = out.attempts[0]?.correct;
+      setTotalAttempts((t) => t + 1);
+      if (result === true) {
+        setCorrectCount((c) => c + 1);
+        setPracticeFeedbackType("ok");
+        setPracticeFeedback("Bagus! 🙂");
+        const idx = practiceIndex;
+        setTimeout(() => {
+          if (idx + 1 < lesson.practice.length) {
+            setPracticeIndex(idx + 1);
+            setPracticeMessages(makePracticeMessages(idx + 1));
+            setPracticeFeedback(null);
+            setPracticeFeedbackType(null);
+          } else {
+            goToRecall();
+          }
+        }, 900);
+      } else {
+        setMistakes((m) => m + 1);
+        setPracticeFeedbackType(result === "partial" ? "warn" : "err");
+        setPracticeFeedback(out.message.content);
+      }
+    } catch {
+      setPracticeMessages(practiceMessages);
+      setPracticeError("Ada masalah. Coba lagi. 🙏");
+    } finally {
       setPracticeBusy(false);
     }
   }
@@ -262,6 +274,9 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   }
 
   function finish() {
+    if (finishingRef.current) return;
+    finishingRef.current = true;
+    for (const id of lesson.newWordIds) touchWord(id);
     const durationMin = Math.max(1, Math.round((Date.now() - startedAt.current) / 60000));
     const recallRate = totalAttempts === 0 ? 1 : correctCount / totalAttempts;
     addSession({
@@ -370,7 +385,9 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-2xl font-bold text-slate-900">{w.indonesian}</div>
-                      <div className="text-sm text-slate-400">{w.pronunciation}</div>
+                      {state.profile.pronunciationOn && (
+                        <div className="text-sm text-slate-400">{w.pronunciation}</div>
+                      )}
                     </div>
                     <SpeakButton text={w.indonesian} />
                   </div>
@@ -398,11 +415,21 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
           </h2>
           <div className="mt-4 space-y-3">
             <ChatBubble kind="tutor">
-              Halo! Selamat datang di pelajaran {lesson.emoji} {lesson.title}. Dengarkan ya.
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  Halo! Selamat datang di pelajaran {lesson.emoji} {lesson.title}. Dengarkan ya.
+                </div>
+                <SpeakButton
+                  text={`Halo! Selamat datang di pelajaran ${lesson.title}.`}
+                />
+              </div>
             </ChatBubble>
             {lesson.sentences.map((s, i) => (
               <ChatBubble key={i} kind="tutor">
-                <div>{s}</div>
+                <div className="flex items-start gap-2">
+                  <div className="flex-1">{s}</div>
+                  <SpeakButton text={s} />
+                </div>
                 {state.profile.translationMode === "beginner" &&
                   lesson.translations?.[i] && (
                     <div className="mt-1 text-xs text-slate-400">
@@ -450,6 +477,11 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
               }`}
             >
               {practiceFeedback}
+            </div>
+          )}
+          {practiceError && (
+            <div className="mt-4 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700">
+              {practiceError}
             </div>
           )}
           <form onSubmit={handlePracticeSubmit} className="mt-4 flex gap-2">

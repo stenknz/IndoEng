@@ -61,6 +61,7 @@ const usedCategories = categoryOrder.filter((c) =>
 
 export function VocabularyPage() {
   const state = useStore((s) => s.state);
+  const pronunciationOn = useStore((s) => s.state.profile.pronunciationOn);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [learnedOnly, setLearnedOnly] = useState(false);
@@ -210,9 +211,11 @@ export function VocabularyPage() {
                       </h3>
                       <StatusBadge learned={learned} />
                     </div>
-                    <div className="mt-0.5 text-sm text-slate-400">
-                      {w.pronunciation}
-                    </div>
+                    {pronunciationOn && (
+                      <div className="mt-0.5 text-sm text-slate-400">
+                        {w.pronunciation}
+                      </div>
+                    )}
                   </div>
                   <SpeakButton text={w.indonesian} />
                 </div>

@@ -3,7 +3,7 @@
 import { useStore } from "@/lib/store/useStore";
 import { WORD_BANK } from "@/lib/data/words";
 import { LESSONS } from "@/lib/data/lessons";
-import { knownWordIds } from "@/lib/difficulty/learnerModel";
+import { metWordIds } from "@/lib/difficulty/learnerModel";
 import { scheduler } from "@/lib/srs/scheduler";
 
 const LEVEL_LABELS = [
@@ -52,8 +52,16 @@ function DotScale({ label, value }: { label: string; value: number }) {
 export function ProgressPage() {
   const state = useStore((s) => s.state);
 
-  const learnedIds = knownWordIds(state.words);
+  const learnedIds = metWordIds(state.words);
   const learnedCount = learnedIds.length;
+
+  const recentAttempts = state.attempts.slice(-10);
+  const recentCorrect = recentAttempts.filter((a) => a.correct === true).length;
+  const recentAccuracy =
+    recentAttempts.length === 0
+      ? 0.5
+      : recentCorrect / recentAttempts.length;
+  const vocabKnowledge = learnedCount / WORD_BANK.length;
 
   const studied = Object.values(state.words);
   const avgFamiliarity =
@@ -111,15 +119,9 @@ export function ProgressPage() {
           {levelLabel}
         </div>
         <div className="mt-5 space-y-3">
-          <DotScale
-            label="Conversation ability"
-            value={state.profile.conversationAbility}
-          />
-          <DotScale label="Confidence" value={state.profile.confidence} />
-          <DotScale
-            label="Vocabulary knowledge"
-            value={state.profile.vocabKnowledge}
-          />
+          <DotScale label="Conversation ability" value={recentAccuracy} />
+          <DotScale label="Confidence" value={recentAccuracy} />
+          <DotScale label="Vocabulary knowledge" value={vocabKnowledge} />
         </div>
       </section>
 

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store/useStore";
 import { TutorEngine } from "@/lib/engine/engine";
-import { knownWordIds } from "@/lib/difficulty/learnerModel";
+import { metWordIds } from "@/lib/difficulty/learnerModel";
 import { LESSONS } from "@/lib/data/lessons";
 import { ChatWindow } from "@/components/ChatWindow";
 import type { ConversationMessage } from "@/lib/types";
@@ -109,7 +109,10 @@ export function ConversationPage() {
       setMessages(updated);
       for (const a of out.attempts) recordAttempt(a);
       for (const [id, res] of Object.entries(out.wordsToRecord)) bumpWord(id, res);
-      updateProfile(out.adaptedProfile);
+      updateProfile({
+        currentDifficulty: out.adaptedProfile.currentDifficulty,
+        level: out.adaptedProfile.level,
+      });
       persistConversation(conversationId, startedAt, updated);
     } catch {
       setMessages(messages);
@@ -132,7 +135,7 @@ export function ConversationPage() {
     );
   }
 
-  if (knownWordIds(state.words).length === 0) {
+  if (metWordIds(state.words).length === 0) {
     return (
       <div className="space-y-6">
         <header>

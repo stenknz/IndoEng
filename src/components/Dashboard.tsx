@@ -5,7 +5,7 @@ import { useStore } from "@/lib/store/useStore";
 import { LESSONS } from "@/lib/data/lessons";
 import { WORD_BANK } from "@/lib/data/words";
 import { scheduler } from "@/lib/srs/scheduler";
-import { knownWordIds } from "@/lib/difficulty/learnerModel";
+import { metWordIds } from "@/lib/difficulty/learnerModel";
 import { LevelBar } from "@/components/LevelBar";
 
 function startOfToday(): number {
@@ -39,7 +39,7 @@ export function Dashboard() {
             100,
         );
 
-  const learned = knownWordIds(state.words).length;
+  const learned = metWordIds(state.words).length;
   const firstRun = learned === 0;
   const progress = Math.min(1, learned / WORD_BANK.length);
   const level = state.profile.level;
