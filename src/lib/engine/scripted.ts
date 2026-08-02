@@ -71,11 +71,15 @@ async function lesson(ctx: TutorContext): Promise<TutorResponse> {
       return {
         text: withinBudget(ctx, `Bagus! 🙂 ${next.prompt}`),
         hint: next.hint,
-        expectedWords: next.expectedWords,
+        expectedWords: item.expectedWords,
         expectAnswer: true,
       };
     }
-    return { text: "Bagus! 🙂 Kamu sudah selesai. Sampai jumpa lagi!", expectAnswer: false };
+    return {
+      text: "Bagus! 🙂 Kamu sudah selesai. Sampai jumpa lagi!",
+      expectedWords: item.expectedWords,
+      expectAnswer: false,
+    };
   }
 
   const prefix = result.correct === "partial" ? "Hampir! " : "";
@@ -148,7 +152,7 @@ async function conversation(ctx: TutorContext): Promise<TutorResponse> {
     return {
       text: withinBudget(ctx, `Bagus! 🙂 ${ctx.input.trim()} ${nextText}`),
       hint: next.hint,
-      expectedWords: next.expectedWords,
+      expectedWords: active.expectedWords ?? [],
       expectAnswer: true,
     };
   }
