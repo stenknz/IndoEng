@@ -28,12 +28,6 @@ npm run test:e2e
 
 ## AI provider
 
-The app works fully offline using a built-in scripted tutor — no configuration required.
+The app runs fully offline on a built-in scripted tutor. That is the default and requires no configuration.
 
-Optionally, it can use an OpenAI-compatible provider. Copy `.env.example` to `.env.local` and fill in:
-
-- `OPENAI_API_KEY` — your API key
-- `OPENAI_BASE_URL` — the provider base URL (defaults to `https://api.openai.com/v1`)
-- `OPENAI_MODEL` — the model name (defaults to `gpt-4o-mini`)
-
-These variables are optional. When not set, the app uses the built-in offline scripted tutor.
+The codebase defines a `LanguageModelProvider` seam (`src/lib/engine/provider.ts`) that is ready for an OpenAI-compatible provider later. Wiring one in would require a server-side route (or proxy) so the API key never ships in the client bundle. No such provider is implemented today, and setting an `OPENAI_API_KEY` in your environment does not activate anything.
