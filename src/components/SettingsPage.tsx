@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store/useStore";
+import { Card } from "@/components/Card";
+import { Button } from "@/components/Button";
+import { Modal } from "@/components/Modal";
+import { useToastStore } from "@/lib/toast";
 import type { TranslationMode } from "@/lib/types";
 
 const MODES: { value: TranslationMode; label: string; description: string }[] = [
@@ -22,11 +26,38 @@ const MODES: { value: TranslationMode; label: string; description: string }[] = 
   },
 ];
 
+function Switch({
+  on,
+  onChange,
+}: {
+  on: boolean;
+  onChange: (on: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      onClick={() => onChange(!on)}
+      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+        on ? "bg-canopy-600" : "bg-mist"
+      }`}
+    >
+      <span
+        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
+          on ? "left-6" : "left-1"
+        }`}
+      />
+    </button>
+  );
+}
+
 export function SettingsPage() {
   const state = useStore((s) => s.state);
   const [saved, setSaved] = useState(false);
-  const [resetDone, setResetDone] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+  const pushToast = useToastStore((s) => s.push);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +77,7 @@ export function SettingsPage() {
   const handleNameChange = (name: string) => {
     useStore.getState().setUser(name);
     setSaved(true);
+    pushToast("Nama tersimpan");
     window.setTimeout(() => setSaved(false), 1500);
   };
 
@@ -62,28 +94,21 @@ export function SettingsPage() {
   };
 
   const handleReset = () => {
-    if (
-      window.confirm(
-        "Reset all progress? This clears your words, lessons, and history. This cannot be undone.",
-      )
-    ) {
-      useStore.getState().resetAll();
-      setResetDone(true);
-      window.setTimeout(() => setResetDone(false), 2500);
-    }
+    useStore.getState().resetAll();
+    pushToast("Semua progres telah dihapus");
   };
 
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">⚙️ Settings</h1>
-        <p className="mt-1 text-slate-500">
-          Tune how Kak learns with you.
-        </p>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+          Settings
+        </h1>
+        <p className="mt-1 text-sm text-muted">Tune how Kak learns with you.</p>
       </header>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Your name
         </h2>
         <div className="mt-3 flex items-center gap-3">
@@ -92,18 +117,16 @@ export function SettingsPage() {
             value={state.user.name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="What should we call you?"
-            className="w-full max-w-xs rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className="w-full max-w-xs rounded-xl border border-ink/10 bg-white px-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"
           />
           {saved && (
-            <span className="text-sm font-medium text-emerald-600">
-              ✓ Saved
-            </span>
+            <span className="text-sm font-medium text-canopy-700">✓ Saved</span>
           )}
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Translation mode
         </h2>
         <div className="mt-4 space-y-3">
@@ -114,8 +137,8 @@ export function SettingsPage() {
                 key={mode.value}
                 className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
                   active
-                    ? "border-brand-500 bg-brand-50"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? "border-canopy-600 bg-canopy-50"
+                    : "border-ink/10 hover:border-ink/20"
                 }`}
               >
                 <input
@@ -124,13 +147,13 @@ export function SettingsPage() {
                   value={mode.value}
                   checked={active}
                   onChange={() => handleModeChange(mode.value)}
-                  className="mt-1 h-4 w-4 accent-brand-600"
+                  className="mt-1 h-4 w-4 accent-canopy-600"
                 />
                 <span>
-                  <span className="block font-semibold text-slate-800">
+                  <span className="block font-semibold text-ink">
                     {mode.label}
                   </span>
-                  <span className="block text-sm text-slate-500">
+                  <span className="block text-sm text-muted">
                     {mode.description}
                   </span>
                 </span>
@@ -138,97 +161,70 @@ export function SettingsPage() {
             );
           })}
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           AI Tutor
         </h2>
         <div className="mt-3 flex items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">
-            Use Kak's AI tutor (OpenCode Go) for free conversation.
+          <p className="text-sm text-muted">
+            Use Kak&apos;s AI tutor (OpenCode Go) for free conversation.
           </p>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={state.profile.aiTutorOn}
-            onClick={() => handleAiTutorChange(!state.profile.aiTutorOn)}
-            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-              state.profile.aiTutorOn ? "bg-brand-600" : "bg-slate-300"
-            }`}
-          >
-            <span
-              className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
-                state.profile.aiTutorOn ? "left-6" : "left-1"
-              }`}
-            />
-          </button>
+          <Switch on={state.profile.aiTutorOn} onChange={handleAiTutorChange} />
         </div>
         {aiConfigured === false && (
-          <p className="mt-3 rounded-xl bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+          <p className="mt-3 rounded-xl bg-marigold-50 px-4 py-2.5 text-sm text-marigold-700">
             Belum aktif. Set OPENCODE_GO_API_KEY di file .env.local lalu mulai
             ulang server. Lihat README untuk petunjuk.
           </p>
         )}
         {aiConfigured === true && state.profile.aiTutorOn && (
-          <p className="mt-3 text-sm font-medium text-emerald-600">
+          <p className="mt-3 text-sm font-medium text-canopy-700">
             AI tutor aktif untuk percakapan. ✓
           </p>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Pronunciation
         </h2>
         <div className="mt-3 flex items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted">
             Show pronunciation guides alongside words.
           </p>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={state.profile.pronunciationOn}
-            onClick={() =>
-              handlePronunciationChange(!state.profile.pronunciationOn)
-            }
-            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-              state.profile.pronunciationOn
-                ? "bg-brand-600"
-                : "bg-slate-300"
-            }`}
-          >
-            <span
-              className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
-                state.profile.pronunciationOn ? "left-6" : "left-1"
-              }`}
-            />
-          </button>
+          <Switch
+            on={state.profile.pronunciationOn}
+            onChange={handlePronunciationChange}
+          />
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-red-500">
+      <Card className="border-red-200 p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-red-500">
           Danger zone
         </h2>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted">
             Clear all words, lessons, and history. This cannot be undone.
           </p>
-          <button
-            type="button"
-            onClick={handleReset}
-            className="rounded-xl border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-          >
+          <Button variant="danger" onClick={() => setResetOpen(true)}>
             Reset all data
-          </button>
+          </Button>
         </div>
-        {resetDone && (
-          <p className="mt-3 text-sm font-medium text-emerald-600">
-            Progress has been reset.
-          </p>
-        )}
-      </section>
+      </Card>
+
+      <Modal
+        open={resetOpen}
+        title="Hapus semua progres?"
+        confirmLabel="Hapus semua"
+        onConfirm={handleReset}
+        onClose={() => setResetOpen(false)}
+      >
+        This clears your words, lessons, and conversation history. This cannot
+        be undone.
+      </Modal>
     </div>
   );
 }

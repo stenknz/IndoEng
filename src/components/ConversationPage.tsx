@@ -8,6 +8,10 @@ import { autoProvider } from "@/lib/engine/autoProvider";
 import { metWordIds } from "@/lib/difficulty/learnerModel";
 import { LESSONS } from "@/lib/data/lessons";
 import { ChatWindow } from "@/components/ChatWindow";
+import { Waveform } from "@/components/Waveform";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { Skeleton } from "@/components/Skeleton";
 import type { ConversationMessage } from "@/lib/types";
 
 export function ConversationPage() {
@@ -130,8 +134,18 @@ export function ConversationPage() {
 
   if (!ready) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-slate-400">
-        Memuat…
+      <div className="flex h-[calc(100dvh-10rem)] flex-col gap-4">
+        <header>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+            Ngobrol dengan Kak
+          </h1>
+          <Skeleton className="mt-2 h-4 w-64" />
+        </header>
+        <div className="flex-1 space-y-3 rounded-2xl border border-ink/5 bg-white p-4 shadow-card">
+          <Skeleton className="h-16 w-3/4" />
+          <Skeleton className="h-12 w-1/2 self-end" />
+          <Skeleton className="h-16 w-2/3" />
+        </div>
       </div>
     );
   }
@@ -140,27 +154,30 @@ export function ConversationPage() {
     return (
       <div className="space-y-6">
         <header>
-          <h1 className="text-2xl font-bold text-slate-900">Ngobrol dengan Kak 💬</h1>
-          <p className="mt-1 text-slate-500">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+            Ngobrol dengan Kak
+          </h1>
+          <p className="mt-1 text-sm text-muted">
             Bicara bahasa Indonesia dengan Kak, tutor kamu.
           </p>
         </header>
-        <section className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <div className="text-4xl">🌱</div>
-          <h2 className="mt-3 text-xl font-bold text-slate-900">
+        <Card className="p-10 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-canopy-50 text-3xl">
+            🌱
+          </div>
+          <h2 className="mt-4 font-display text-2xl font-semibold text-ink">
             Selesaikan Lesson 1 dulu, ya!
           </h2>
-          <p className="mx-auto mt-2 max-w-md text-slate-500">
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
             Kak belum tahu kata-kata kamu. Belajar kata pertama dulu supaya Kak
             bisa mengobrol denganmu.
           </p>
-          <Link
-            href={`/lesson/${LESSONS[0].id}`}
-            className="mt-5 inline-block rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-          >
-            Mulai Lesson 1 →
-          </Link>
-        </section>
+          <div className="mt-6 flex justify-center">
+            <Button>
+              <Link href={`/lesson/${LESSONS[0].id}`}>Mulai Lesson 1 →</Link>
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }
@@ -169,21 +186,18 @@ export function ConversationPage() {
     <div className="flex h-[calc(100dvh-10rem)] flex-col gap-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ngobrol dengan Kak 💬</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+            Ngobrol dengan Kak
+          </h1>
+          <p className="mt-1 text-sm text-muted">
             {state.profile.aiTutorOn
               ? "Kak bisa ngobrol apa saja — pelan-pelan dan sabar."
               : "Kak cuma pakai kata-kata yang kamu sudah tahu."}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleNew}
-          disabled={busy}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
-        >
+        <Button variant="secondary" size="sm" onClick={handleNew} disabled={busy}>
           New conversation
-        </button>
+        </Button>
       </header>
 
       <ChatWindow
@@ -192,7 +206,10 @@ export function ConversationPage() {
       />
 
       {busy && (
-        <div className="px-1 text-xs text-slate-400">Kak sedang berpikir…</div>
+        <div className="flex items-center gap-2 px-1 text-xs text-muted">
+          <Waveform active />
+          Kak sedang berpikir…
+        </div>
       )}
       {error && (
         <div className="rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700">
@@ -207,15 +224,11 @@ export function ConversationPage() {
           disabled={busy}
           placeholder="Tulis dalam bahasa Indonesia…"
           autoComplete="off"
-          className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 disabled:bg-slate-50"
+          className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15 disabled:bg-mist/60"
         />
-        <button
-          type="submit"
-          disabled={busy || input.trim() === ""}
-          className="rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={busy || input.trim() === ""}>
           Kirim
-        </button>
+        </Button>
       </form>
     </div>
   );

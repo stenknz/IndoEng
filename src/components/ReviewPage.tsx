@@ -7,6 +7,11 @@ import { scheduler } from "@/lib/srs/scheduler";
 import { matchAnswer } from "@/lib/engine/matcher";
 import { WORD_BANK } from "@/lib/data/words";
 import { SpeakButton } from "@/components/SpeakButton";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { ProgressBar } from "@/components/ProgressBar";
+import { Skeleton } from "@/components/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import type { VocabularyWord } from "@/lib/types";
 
 function mergeStateWord(bank: VocabularyWord, stored: VocabularyWord): VocabularyWord {
@@ -29,9 +34,11 @@ function overlayFromBank(stored: VocabularyWord): VocabularyWord {
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-4 text-center">
-      <div className="text-2xl font-bold text-slate-800">{value}</div>
-      <div className="mt-0.5 text-sm text-slate-500">{label}</div>
+    <div className="rounded-xl bg-mist/70 p-4 text-center">
+      <div className="font-display text-2xl font-bold text-canopy-700">{value}</div>
+      <div className="mt-0.5 text-xs font-medium uppercase tracking-wide text-muted">
+        {label}
+      </div>
     </div>
   );
 }
@@ -155,33 +162,40 @@ export function ReviewPage() {
   }
 
   if (queue === null) {
-    return <div className="py-16 text-center text-slate-400">Memuat…</div>;
+    return (
+      <div className="space-y-6">
+        <header>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+            Review
+          </h1>
+          <Skeleton className="mt-2 h-4 w-72" />
+        </header>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
   if (queue.length === 0) {
     return (
       <div className="space-y-6">
         <header>
-          <h1 className="text-2xl font-bold text-slate-900">🔄 Review</h1>
-          <p className="mt-1 text-slate-500">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+            Review
+          </h1>
+          <p className="mt-1 text-sm text-muted">
             Ingat kembali kata-kata yang sudah kamu pelajari.
           </p>
         </header>
-        <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
-          <div className="text-4xl">🌴</div>
-          <h2 className="mt-3 text-lg font-bold text-slate-800">
-            Tidak ada yang perlu diulang hari ini!
-          </h2>
-          <p className="mt-1 text-slate-500">
-            Semua kata sudah kamu kuasai. Bagus sekali! 🎉
-          </p>
-          <Link
-            href="/conversation"
-            className="mt-5 inline-block rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-          >
-            Mari ngobrol dengan Kak →
-          </Link>
-        </section>
+        <EmptyState
+          icon="🌴"
+          title="Tidak ada yang perlu diulang hari ini!"
+          body="Semua kata sudah kamu kuasai. Bagus sekali! 🎉"
+          action={
+            <Link href="/conversation">
+              <Button>Mari ngobrol dengan Kak →</Button>
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -190,15 +204,17 @@ export function ReviewPage() {
     const recallRate = Math.round((correctCount / queue.length) * 100);
     return (
       <div className="space-y-6">
-        <section className="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-500 p-8 text-center text-white shadow-sm">
+        <Card className="relative overflow-hidden bg-canopy-600 p-8 text-center text-white">
           <div className="text-4xl">🎉</div>
-          <h2 className="mt-3 text-2xl font-bold">Selesai!</h2>
-          <p className="mt-1 text-brand-50">
+          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight">
+            Selesai!
+          </h2>
+          <p className="mt-1 text-sm text-canopy-100">
             Review selesai. Kata-kata ini akan muncul lagi saat waktunya tiba.
           </p>
-        </section>
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+        </Card>
+        <Card className="p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
             Ringkasan
           </h2>
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -206,20 +222,17 @@ export function ReviewPage() {
             <Stat label="Diulang" value={queue.length} />
             <Stat label="Tingkat ingatan" value={`${recallRate}%`} />
           </div>
-          <div className="mt-4 rounded-xl bg-brand-50 p-4 text-center">
-            <div className="text-2xl font-bold text-brand-700">
+          <div className="mt-4 rounded-xl bg-marigold-50 p-4 text-center">
+            <div className="font-display text-2xl font-bold text-marigold-700">
               {maxStreak} 🔥
             </div>
-            <div className="mt-0.5 text-sm text-brand-600">
+            <div className="mt-0.5 text-sm text-muted">
               Jawaban benar beruntun terbaik
             </div>
           </div>
-        </section>
-        <Link
-          href="/"
-          className="block w-full rounded-xl bg-brand-600 px-6 py-3 text-center font-semibold text-white shadow-sm transition hover:bg-brand-500"
-        >
-          Kembali ke beranda
+        </Card>
+        <Link href="/" className="block">
+          <Button className="w-full">Kembali ke beranda</Button>
         </Link>
       </div>
     );
@@ -231,42 +244,43 @@ export function ReviewPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">🔄 Review</h1>
-        <p className="mt-1 text-slate-500">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+          Review
+        </h1>
+        <p className="mt-1 text-sm text-muted">
           Ingat kembali kata-kata yang sudah kamu pelajari.
         </p>
       </header>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <Card className="p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
             Review
           </h2>
-          <span className="text-sm font-semibold text-slate-500">
+          <span className="text-sm font-semibold text-muted">
             {index + 1} / {queue.length}
           </span>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-brand-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="mt-3">
+          <ProgressBar value={progress} />
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-3 rounded-2xl bg-slate-50 p-6 text-center">
-          <div className="text-3xl font-bold text-slate-900">{word.english}</div>
+        <div className="mt-6 flex items-center justify-center gap-3 rounded-2xl bg-mist/70 p-6 text-center">
+          <div className="font-display text-3xl font-bold text-ink">
+            {word.english}
+          </div>
           <SpeakButton text={word.indonesian} />
         </div>
-        <p className="mt-2 text-center text-sm text-slate-400">
+        <p className="mt-2 text-center text-sm text-muted">
           Bagaimana bilangnya dalam bahasa Indonesia?
         </p>
 
         {feedback && (
           <div
-            className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+            className={`mt-4 animate-pop rounded-xl px-4 py-3 text-sm ${
               feedback.type === "ok"
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-amber-50 text-amber-800"
+                ? "bg-canopy-50 text-canopy-700"
+                : "bg-marigold-50 text-marigold-700"
             }`}
           >
             {feedback.text}
@@ -274,13 +288,9 @@ export function ReviewPage() {
         )}
 
         {revealed ? (
-          <button
-            type="button"
-            onClick={nextWord}
-            className="mt-4 w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-          >
+          <Button onClick={nextWord} className="mt-4 w-full">
             Lanjut
-          </button>
+          </Button>
         ) : (
           <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
             <input
@@ -289,18 +299,14 @@ export function ReviewPage() {
               placeholder="Ketik dalam bahasa Indonesia…"
               autoComplete="off"
               autoFocus
-              className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500"
+              className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"
             />
-            <button
-              type="submit"
-              disabled={input.trim() === ""}
-              className="rounded-xl bg-brand-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:opacity-50"
-            >
+            <Button type="submit" disabled={input.trim() === ""}>
               Periksa
-            </button>
+            </Button>
           </form>
         )}
-      </section>
+      </Card>
     </div>
   );
 }

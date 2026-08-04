@@ -7,6 +7,11 @@ import { TutorEngine } from "@/lib/engine/engine";
 import { matchAnswer } from "@/lib/engine/matcher";
 import { WORD_BANK } from "@/lib/data/words";
 import { SpeakButton } from "@/components/SpeakButton";
+import { Waveform } from "@/components/Waveform";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { Celebration } from "@/components/Celebration";
+import { useToastStore } from "@/lib/toast";
 import type {
   ConversationMessage,
   Lesson,
@@ -49,10 +54,10 @@ function ChatBubble({
   return (
     <div className={`flex ${tutor ? "justify-start" : "justify-end"}`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-card ${
           tutor
-            ? "rounded-bl-sm border border-slate-200 bg-white text-slate-800"
-            : "rounded-br-sm bg-brand-600 text-white"
+            ? "rounded-bl-sm border border-ink/5 bg-white text-ink"
+            : "rounded-br-sm bg-canopy-600 text-white"
         }`}
       >
         {children}
@@ -70,6 +75,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   const bumpWord = useStore((s) => s.bumpWord);
   const updateProfile = useStore((s) => s.updateProfile);
   const touchWord = useStore((s) => s.touchWord);
+  const pushToast = useToastStore((s) => s.push);
 
   const engineRef = useRef<TutorEngine | null>(null);
   if (!engineRef.current) engineRef.current = new TutorEngine();
@@ -83,6 +89,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   const [mistakes, setMistakes] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
+  const [celebrating, setCelebrating] = useState(false);
 
   const [practiceIndex, setPracticeIndex] = useState(0);
   const [practiceMessages, setPracticeMessages] = useState<ConversationMessage[]>([]);
@@ -260,6 +267,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   function finish() {
     if (finishingRef.current) return;
     finishingRef.current = true;
+    setCelebrating(true);
     for (const id of lesson.newWordIds) touchWord(id);
     const durationMin = Math.max(1, Math.round((Date.now() - startedAt.current) / 60000));
     const recallRate = totalAttempts === 0 ? 1 : correctCount / totalAttempts;
@@ -272,7 +280,10 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       recallRate,
     });
     setLessonProgress(lesson.id, "complete");
-    router.push("/");
+    pushToast("Pelajaran selesai. Bagus sekali! 🎉");
+    setTimeout(() => {
+      router.push("/");
+    }, 1200);
   }
 
   const toReview = Array.from(touchedRef.current)
@@ -281,24 +292,25 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
 
   const recallItem = lesson.recall[recallIndex];
   const practiceItem = lesson.practice[practiceIndex];
+  const stepNumber = STEP_ORDER[step];
 
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
             {lesson.emoji} {lesson.title}
           </h1>
-          <p className="mt-1 text-slate-500">
-            Langkah {STEP_ORDER[step]} dari 6 · {STEP_LABELS[step]}
+          <p className="mt-1 text-sm text-muted">
+            Langkah {stepNumber} dari 6 · {STEP_LABELS[step]}
           </p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1" aria-hidden="true">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <div
               key={n}
-              className={`h-1.5 w-5 rounded-full ${
-                n <= STEP_ORDER[step] ? "bg-brand-500" : "bg-slate-200"
+              className={`h-1.5 w-5 rounded-full transition-colors duration-500 ${
+                n <= stepNumber ? "bg-canopy-600" : "bg-mist"
               }`}
             />
           ))}
@@ -308,47 +320,48 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       {step === "warmup" && (
         <div className="space-y-4">
           {warmUp.length === 0 ? (
-            <section className="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-500 p-8 text-center text-white shadow-sm">
-              <h2 className="text-2xl font-bold">Halo, siap belajar? 👋</h2>
-              <p className="mt-2 text-brand-50">
+            <Card className="relative overflow-hidden bg-canopy-600 p-8 text-center text-white">
+              <div className="absolute left-6 top-6 opacity-20">
+                <Waveform light className="scale-150" />
+              </div>
+              <h2 className="font-display text-3xl font-bold tracking-tight">
+                Halo, siap belajar? 👋
+              </h2>
+              <p className="mt-2 text-sm text-canopy-100">
                 Hari ini kita mulai pelajaran {lesson.title}.
               </p>
-              <button
-                onClick={() => setStep("newwords")}
-                className="mt-5 inline-block rounded-xl bg-white px-6 py-3 font-semibold text-brand-700 shadow-sm transition hover:bg-brand-50"
-              >
-                Let&apos;s begin!
-              </button>
-            </section>
+              <div className="mt-6 flex justify-center">
+                <Button variant="inverse" onClick={() => setStep("newwords")}>
+                  Let&apos;s begin!
+                </Button>
+              </div>
+            </Card>
           ) : (
             <>
-              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+              <Card className="p-6">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
                   Pemanasan — apa yang kamu ingat?
                 </h2>
                 <div className="mt-4 space-y-3">
                   {warmUp.map((w) => (
                     <div
                       key={w.id}
-                      className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
+                      className="flex items-center justify-between rounded-2xl border border-ink/5 bg-white px-5 py-4 shadow-card"
                     >
                       <div>
-                        <span className="text-lg font-semibold text-slate-900">
+                        <span className="font-display text-lg font-semibold text-ink">
                           {w.indonesian}
                         </span>
-                        <span className="ml-2 text-sm text-slate-400">{w.english}</span>
+                        <span className="ml-2 text-sm text-muted">{w.english}</span>
                       </div>
                       <SpeakButton text={w.indonesian} />
                     </div>
                   ))}
                 </div>
-              </section>
-              <button
-                onClick={() => setStep("newwords")}
-                className="w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-              >
+              </Card>
+              <Button onClick={() => setStep("newwords")} className="w-full">
                 Mulai
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -356,52 +369,58 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
 
       {step === "newwords" && (
         <div className="space-y-4">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+          <Card className="p-6">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
               Kata baru hari ini
             </h2>
             <div className="mt-4 space-y-4">
               {newWords.map((w) => (
                 <div
                   key={w.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                  className="rounded-2xl border border-ink/5 bg-white p-5 shadow-card"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-2xl font-bold text-slate-900">{w.indonesian}</div>
-                      {state.profile.pronunciationOn && (
-                        <div className="text-sm text-slate-400">{w.pronunciation}</div>
-                      )}
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-canopy-50 text-lg">
+                        {wordById(w.id)?.category === "numbers" ? "🔢" : "🗣️"}
+                      </span>
+                      <div>
+                        <div className="font-display text-2xl font-bold text-ink">
+                          {w.indonesian}
+                        </div>
+                        {state.profile.pronunciationOn && (
+                          <div className="text-sm text-muted">{w.pronunciation}</div>
+                        )}
+                      </div>
                     </div>
                     <SpeakButton text={w.indonesian} />
                   </div>
-                  <div className="mt-1 text-slate-600">{w.english}</div>
-                  <div className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-500">
-                    {w.example} <span className="text-slate-400">— {w.exampleTranslation}</span>
+                  <div className="mt-1 text-sm text-ink">{w.english}</div>
+                  <div className="mt-3 rounded-xl bg-mist/70 px-3 py-2 text-sm text-muted">
+                    {w.example}{" "}
+                    <span className="text-muted/70">— {w.exampleTranslation}</span>
                   </div>
                 </div>
               ))}
             </div>
-          </section>
-          <button
-            onClick={() => setStep("conversation")}
-            className="w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-          >
+          </Card>
+          <Button onClick={() => setStep("conversation")} className="w-full">
             Lanjut
-          </button>
+          </Button>
         </div>
       )}
 
       {step === "conversation" && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+        <Card className="p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
             Dengarkan Kak berbicara
           </h2>
           <div className="mt-4 space-y-3">
             <ChatBubble kind="tutor">
               <div className="flex items-start gap-2">
                 <div className="flex-1">
-                  Halo! Selamat datang di pelajaran {lesson.emoji} {lesson.title}. Dengarkan ya.
+                  Halo! Selamat datang di pelajaran {lesson.emoji} {lesson.title}.
+                  Dengarkan ya.
                 </div>
                 <SpeakButton
                   text={`Halo! Selamat datang di pelajaran ${lesson.title}.`}
@@ -411,37 +430,39 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
             {lesson.sentences.map((s, i) => (
               <ChatBubble key={i} kind="tutor">
                 <div className="flex items-start gap-2">
+                  <div className="mt-1.5">
+                    <Waveform className="opacity-70" />
+                  </div>
                   <div className="flex-1">{s}</div>
                   <SpeakButton text={s} />
                 </div>
                 {state.profile.translationMode === "beginner" &&
                   lesson.translations?.[i] && (
-                    <div className="mt-1 text-xs text-slate-400">
+                    <div className="mt-1 text-xs text-muted">
                       {lesson.translations[i]}
                     </div>
                   )}
               </ChatBubble>
             ))}
           </div>
-          <div className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="mt-4 rounded-xl bg-marigold-50 px-4 py-3 text-sm text-marigold-700">
             💡 {lesson.grammarNote ?? lesson.reviewNote}
           </div>
-          <button
-            onClick={startPractice}
-            className="mt-4 w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-          >
+          <Button onClick={startPractice} className="mt-4 w-full">
             Sekarang saya coba
-          </button>
-        </section>
+          </Button>
+        </Card>
       )}
 
       {step === "practice" && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <Card className="p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
               Latihan {practiceIndex + 1} dari {lesson.practice.length}
             </h2>
-            {practiceItem && <div className="text-xs text-slate-400">{practiceItem.hint}</div>}
+            {practiceItem && (
+              <div className="text-xs text-muted">{practiceItem.hint}</div>
+            )}
           </div>
           <div className="mt-4 space-y-3">
             {practiceMessages.map((m) => (
@@ -452,11 +473,11 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
           </div>
           {practiceFeedback && (
             <div
-              className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+              className={`mt-4 animate-pop rounded-xl px-4 py-3 text-sm ${
                 practiceFeedbackType === "ok"
-                  ? "bg-emerald-50 text-emerald-700"
+                  ? "bg-canopy-50 text-canopy-700"
                   : practiceFeedbackType === "warn"
-                    ? "bg-amber-50 text-amber-800"
+                    ? "bg-marigold-50 text-marigold-700"
                     : "bg-red-50 text-red-700"
               }`}
             >
@@ -475,46 +496,46 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
               disabled={practiceBusy || practiceFeedbackType === "ok"}
               placeholder="Tulis dalam bahasa Indonesia…"
               autoComplete="off"
-              className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500 disabled:bg-slate-50"
+              className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15 disabled:bg-mist/60"
             />
-            <button
+            <Button
               type="submit"
               disabled={practiceBusy || practiceFeedbackType === "ok" || practiceInput.trim() === ""}
-              className="rounded-xl bg-brand-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:opacity-50"
             >
               Kirim
-            </button>
+            </Button>
           </form>
-        </section>
+        </Card>
       )}
 
       {step === "recall" && recallItem && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+        <Card className="p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
             Ingatan {recallIndex + 1} dari {lesson.recall.length}
           </h2>
-          <div className="mt-4 rounded-2xl bg-slate-50 p-6 text-center">
-            <div className="text-3xl font-bold text-slate-900">{recallItem.english}</div>
-            <div className="mt-1 text-sm text-slate-400">Bagaimana bilangnya dalam bahasa Indonesia?</div>
+          <div className="mt-4 rounded-2xl bg-mist/70 p-6 text-center">
+            <div className="font-display text-3xl font-bold text-ink">
+              {recallItem.english}
+            </div>
+            <div className="mt-1 text-sm text-muted">
+              Bagaimana bilangnya dalam bahasa Indonesia?
+            </div>
           </div>
           {recallFeedback && (
             <div
-              className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+              className={`mt-4 animate-pop rounded-xl px-4 py-3 text-sm ${
                 recallFeedbackType === "ok"
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-amber-50 text-amber-800"
+                  ? "bg-canopy-50 text-canopy-700"
+                  : "bg-marigold-50 text-marigold-700"
               }`}
             >
               {recallFeedback}
             </div>
           )}
           {recallRevealed ? (
-            <button
-              onClick={nextRecall}
-              className="mt-4 w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-            >
+            <Button onClick={nextRecall} className="mt-4 w-full">
               Lanjut
-            </button>
+            </Button>
           ) : (
             <form onSubmit={handleRecallSubmit} className="mt-4 flex gap-2">
               <input
@@ -522,46 +543,54 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
                 onChange={(e) => setRecallInput(e.target.value)}
                 placeholder="Ketik jawaban…"
                 autoComplete="off"
-                className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-500"
+                className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"
               />
-              <button
-                type="submit"
-                disabled={recallInput.trim() === ""}
-                className="rounded-xl bg-brand-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:opacity-50"
-              >
+              <Button type="submit" disabled={recallInput.trim() === ""}>
                 Periksa
-              </button>
+              </Button>
             </form>
           )}
-        </section>
+        </Card>
       )}
 
       {step === "review" && (
         <div className="space-y-4">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-800">Kata baru</h2>
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-ink">Kata baru</h2>
             <ul className="mt-3 space-y-1.5">
               {newWords.map((w) => (
-                <li key={w.id} className="text-sm text-slate-700">
-                  <span className="font-semibold text-slate-900">{w.indonesian}</span>
-                  <span className="text-slate-400"> — </span>
+                <li key={w.id} className="text-sm text-ink">
+                  <span className="font-semibold text-ink">{w.indonesian}</span>
+                  <span className="text-muted"> — </span>
                   {w.english}
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
 
           <div className="grid grid-cols-2 gap-4">
-            <section className="rounded-xl bg-slate-50 p-4">
-              <div className="text-2xl font-bold text-slate-800">{mistakes}</div>
-              <div className="mt-0.5 text-sm text-slate-500">Kesalahan</div>
-            </section>
+            <div className="rounded-2xl border border-ink/5 bg-white p-4 shadow-card">
+              <div className="font-display text-2xl font-bold text-canopy-700">
+                {mistakes}
+              </div>
+              <div className="mt-0.5 text-xs font-medium uppercase tracking-wide text-muted">
+                Kesalahan
+              </div>
+            </div>
+            <div className="rounded-2xl border border-ink/5 bg-white p-4 shadow-card">
+              <div className="font-display text-2xl font-bold text-marigold-700">
+                {correctCount}
+              </div>
+              <div className="mt-0.5 text-xs font-medium uppercase tracking-wide text-muted">
+                Benar
+              </div>
+            </div>
           </div>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-800">Yang perlu diulang</h2>
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-ink">Yang perlu diulang</h2>
             {toReview.length === 0 ? (
-              <p className="mt-3 text-slate-500">
+              <p className="mt-3 text-sm text-muted">
                 Tidak ada — kamu menguasainya! Bagus sekali. 🎉
               </p>
             ) : (
@@ -569,23 +598,22 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
                 {toReview.map((w) => (
                   <span
                     key={w.id}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700"
+                    className="rounded-full border border-ink/5 bg-mist/70 px-3 py-1.5 text-sm font-medium text-ink"
                   >
-                    {w.indonesian} <span className="text-slate-400">—</span> {w.english}
+                    {w.indonesian} <span className="text-muted">—</span> {w.english}
                   </span>
                 ))}
               </div>
             )}
-          </section>
+          </Card>
 
-          <button
-            onClick={finish}
-            className="w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-500"
-          >
+          <Button onClick={finish} className="w-full">
             Selesai! 🎉
-          </button>
+          </Button>
         </div>
       )}
+
+      {celebrating && <Celebration label="Pelajaran selesai!" />}
     </div>
   );
 }

@@ -31,7 +31,7 @@ export function SpeakButton({
             ? "Putar pelafalan"
             : "Belum ada suara bahasa Indonesia di perangkat ini"
         }
-        className={`rounded-full bg-brand-50 p-2.5 text-base text-brand-700 transition hover:bg-brand-100 ${className}`}
+        className={`rounded-full bg-canopy-50 p-2.5 text-base text-canopy-700 transition hover:bg-canopy-100 ${className}`}
       >
         🔊
       </button>

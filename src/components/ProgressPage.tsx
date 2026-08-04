@@ -5,6 +5,8 @@ import { WORD_BANK } from "@/lib/data/words";
 import { LESSONS } from "@/lib/data/lessons";
 import { metWordIds } from "@/lib/difficulty/learnerModel";
 import { scheduler } from "@/lib/srs/scheduler";
+import { Card } from "@/components/Card";
+import { ProgressBar } from "@/components/ProgressBar";
 
 const LEVEL_LABELS = [
   "Level 1 — Survival Words",
@@ -18,29 +20,17 @@ function dotsFor(value: number): number {
   return Math.max(0, Math.min(5, Math.round(value * 5)));
 }
 
-function Bar({ value }: { value: number }) {
-  const percent = Math.round(Math.max(0, Math.min(1, value)) * 100);
-  return (
-    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-100">
-      <div
-        className="h-full rounded-full bg-brand-500 transition-all duration-300"
-        style={{ width: `${percent}%` }}
-      />
-    </div>
-  );
-}
-
 function DotScale({ label, value }: { label: string; value: number }) {
   const filled = dotsFor(value);
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-sm text-slate-600">{label}</span>
+      <span className="text-sm text-ink">{label}</span>
       <div className="flex gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
           <span
             key={i}
-            className={`h-2.5 w-2.5 rounded-full ${
-              i < filled ? "bg-brand-500" : "bg-slate-200"
+            className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${
+              i < filled ? "bg-canopy-600" : "bg-mist"
             }`}
           />
         ))}
@@ -92,30 +82,34 @@ export function ProgressPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">📈 Progress</h1>
-        <p className="mt-1 text-slate-500">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+          Progress
+        </h1>
+        <p className="mt-1 text-sm text-muted">
           A look at how far you&apos;ve come — no guesswork, just what you&apos;ve
           done.
         </p>
       </header>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <Card className="p-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
             Vocabulary learned
           </h2>
-          <span className="text-sm font-semibold text-slate-700">
+          <span className="text-sm font-semibold text-ink">
             {learnedCount} of {WORD_BANK.length} words learned
           </span>
         </div>
-        <Bar value={learnedCount / WORD_BANK.length} />
-      </section>
+        <div className="mt-3">
+          <ProgressBar value={learnedCount / WORD_BANK.length} />
+        </div>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Your level
         </h2>
-        <div className="mt-3 text-xl font-bold text-slate-800">
+        <div className="mt-3 font-display text-2xl font-bold text-canopy-700">
           {levelLabel}
         </div>
         <div className="mt-5 space-y-3">
@@ -123,102 +117,103 @@ export function ProgressPage() {
           <DotScale label="Confidence" value={recentAccuracy} />
           <DotScale label="Vocabulary knowledge" value={vocabKnowledge} />
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Review strength
         </h2>
         <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="rounded-xl bg-slate-50 p-4">
-            <div className="text-2xl font-bold text-slate-800">
+          <div className="rounded-xl bg-mist/70 p-4">
+            <div className="font-display text-2xl font-bold text-canopy-700">
               {studied.length === 0 ? "—" : `${strength}%`}
             </div>
-            <div className="mt-0.5 text-sm text-slate-500">
+            <div className="mt-0.5 text-xs font-medium uppercase tracking-wide text-muted">
               average recall of words you&apos;ve met
             </div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-4">
-            <div className="text-2xl font-bold text-slate-800">{dueCount}</div>
-            <div className="mt-0.5 text-sm text-slate-500">
+          <div className="rounded-xl bg-mist/70 p-4">
+            <div className="font-display text-2xl font-bold text-marigold-700">
+              {dueCount}
+            </div>
+            <div className="mt-0.5 text-xs font-medium uppercase tracking-wide text-muted">
               words due today
             </div>
           </div>
         </div>
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Recent sessions
         </h2>
         {recentSessions.length === 0 ? (
-          <p className="mt-3 text-slate-500">
+          <p className="mt-3 text-sm text-muted">
             No sessions yet — finish a lesson or review to see it here.
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-slate-100">
+          <ul className="mt-3 divide-y divide-ink/5">
             {recentSessions.map((s) => (
               <li
                 key={s.id}
                 className="flex items-center justify-between gap-4 py-3"
               >
-                <span className="text-slate-800">
+                <span className="text-ink">
                   {new Date(s.ts).toLocaleDateString(undefined, {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
                   })}
                 </span>
-                <span className="text-sm text-slate-500">
-                  {s.durationMin} min
-                </span>
-                <span className="text-sm font-semibold text-slate-700">
+                <span className="text-sm text-muted">{s.durationMin} min</span>
+                <span className="text-sm font-semibold text-ink">
                   {Math.round(s.recallRate * 100)}% recall
                 </span>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Topics completed
         </h2>
         <div className="mt-4 space-y-4">
           {levelGroups.map((g) => (
             <div key={g.level}>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-sm font-semibold text-slate-700">
+                <span className="text-sm font-semibold text-ink">
                   Level {g.level + 1}
                 </span>
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-muted">
                   {g.completed} of {g.total} topics
                 </span>
               </div>
-              <Bar value={g.completed / g.total} />
+              <div className="mt-2">
+                <ProgressBar value={g.completed / g.total} />
+              </div>
             </div>
           ))}
         </div>
-        <ul className="mt-6 divide-y divide-slate-100">
+        <ul className="mt-6 divide-y divide-ink/5">
           {LESSONS.map((l) => {
             const done = state.lessons[l.id]?.status === "complete";
             return (
-              <li
-                key={l.id}
-                className="flex items-center gap-3 py-3"
-              >
-                <span className="text-xl">{l.emoji}</span>
+              <li key={l.id} className="flex items-center gap-3 py-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mist/70 text-lg">
+                  {l.emoji}
+                </span>
                 <span
                   className={`flex-1 text-sm ${
-                    done ? "text-slate-700" : "text-slate-500"
+                    done ? "text-ink" : "text-muted"
                   }`}
                 >
                   {l.title}
                 </span>
                 <span
                   className={
-                    done ? "text-emerald-500" : "text-slate-300"
+                    done ? "font-semibold text-canopy-600" : "text-muted/50"
                   }
                 >
                   {done ? "✓" : "○"}
@@ -227,7 +222,7 @@ export function ProgressPage() {
             );
           })}
         </ul>
-      </section>
+      </Card>
     </div>
   );
 }
