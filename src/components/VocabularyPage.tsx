@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store/useStore";
 import { WORD_BANK, categoryOrder } from "@/lib/data/words";
 import { SpeakButton } from "@/components/SpeakButton";
+import { WordImage } from "@/components/WordImage";
 import { Icon } from "@/components/Icon";
 import { ProgressBar } from "@/components/ProgressBar";
 import { EmptyState } from "@/components/EmptyState";
@@ -185,21 +186,32 @@ export function VocabularyPage() {
                   learned ? "bg-white" : "bg-mist/40"
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-display text-2xl font-bold text-ink">
-                        {w.indonesian}
-                      </h3>
-                      <StatusBadge learned={learned} />
+                <div className="flex items-start gap-4">
+                  {w.image && (
+                    <div className="w-24 shrink-0">
+                      <WordImage src={w.image} alt={w.english} aspect="square" />
                     </div>
-                    {pronunciationOn && (
-                      <div className="mt-0.5 text-sm text-muted">{w.pronunciation}</div>
-                    )}
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-display text-2xl font-bold text-ink">
+                            {w.indonesian}
+                          </h3>
+                          <StatusBadge learned={learned} />
+                        </div>
+                        {pronunciationOn && (
+                          <div className="mt-0.5 text-sm text-muted">
+                            {w.pronunciation}
+                          </div>
+                        )}
+                      </div>
+                      <SpeakButton text={w.indonesian} />
+                    </div>
+                    <div className="mt-1 text-sm text-ink">{w.english}</div>
                   </div>
-                  <SpeakButton text={w.indonesian} />
                 </div>
-                <div className="mt-1 text-sm text-ink">{w.english}</div>
                 <div className="mt-3 rounded-xl bg-mist/70 px-3 py-2 text-sm text-muted">
                   {w.example}{" "}
                   <span className="text-muted/70">— {w.exampleTranslation}</span>

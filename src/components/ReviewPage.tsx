@@ -7,6 +7,7 @@ import { scheduler } from "@/lib/srs/scheduler";
 import { matchAnswer } from "@/lib/engine/matcher";
 import { WORD_BANK } from "@/lib/data/words";
 import { SpeakButton } from "@/components/SpeakButton";
+import { WordImage } from "@/components/WordImage";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -265,11 +266,18 @@ export function ReviewPage() {
           <ProgressBar value={progress} />
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-3 rounded-2xl bg-mist/70 p-6 text-center">
-          <div className="font-display text-3xl font-bold text-ink">
-            {word.english}
+        <div className="mt-6 rounded-2xl bg-mist/70 p-6 text-center">
+          {word.image && (
+            <div className="mx-auto mb-4 w-44">
+              <WordImage src={word.image} alt={word.english} aspect="square" />
+            </div>
+          )}
+          <div className="flex items-center justify-center gap-3">
+            <div className="font-display text-3xl font-bold text-ink">
+              {word.english}
+            </div>
+            <SpeakButton text={word.indonesian} />
           </div>
-          <SpeakButton text={word.indonesian} />
         </div>
         <p className="mt-2 text-center text-sm text-muted">
           Bagaimana bilangnya dalam bahasa Indonesia?

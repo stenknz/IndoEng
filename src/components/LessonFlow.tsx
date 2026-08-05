@@ -8,6 +8,7 @@ import { matchAnswer } from "@/lib/engine/matcher";
 import { WORD_BANK } from "@/lib/data/words";
 import { SpeakButton } from "@/components/SpeakButton";
 import { Waveform } from "@/components/Waveform";
+import { WordImage } from "@/components/WordImage";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Celebration } from "@/components/Celebration";
@@ -379,11 +380,21 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
                   key={w.id}
                   className="rounded-2xl border border-ink/5 bg-white p-5 shadow-card"
                 >
+                  {w.image && (
+                    <WordImage
+                      src={w.image}
+                      alt={w.english}
+                      aspect="video"
+                      className="mb-4"
+                    />
+                  )}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-canopy-50 text-lg">
-                        {wordById(w.id)?.category === "numbers" ? "🔢" : "🗣️"}
-                      </span>
+                      {!w.image && (
+                        <span className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-canopy-50 text-lg">
+                          {wordById(w.id)?.category === "numbers" ? "🔢" : "🗣️"}
+                        </span>
+                      )}
                       <div>
                         <div className="font-display text-2xl font-bold text-ink">
                           {w.indonesian}
@@ -514,6 +525,21 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
             Ingatan {recallIndex + 1} dari {lesson.recall.length}
           </h2>
           <div className="mt-4 rounded-2xl bg-mist/70 p-6 text-center">
+            {(() => {
+              const recallWord = WORD_BANK.find(
+                (w) =>
+                  w.indonesian.toLowerCase() === recallItem.indonesian.toLowerCase(),
+              );
+              return recallWord?.image ? (
+                <div className="mx-auto mb-4 w-44">
+                  <WordImage
+                    src={recallWord.image}
+                    alt={recallWord.english}
+                    aspect="square"
+                  />
+                </div>
+              ) : null;
+            })()}
             <div className="font-display text-3xl font-bold text-ink">
               {recallItem.english}
             </div>
