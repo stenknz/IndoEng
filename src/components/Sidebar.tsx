@@ -12,6 +12,7 @@ import { WORD_BANK } from "@/lib/data/words";
 const NAV_ITEMS: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Learn", icon: "home" },
   { href: "/conversation", label: "Conversation", icon: "chat" },
+  { href: "/translate", label: "Translate", icon: "globe" },
   { href: "/vocabulary", label: "Vocabulary", icon: "book" },
   { href: "/review", label: "Review", icon: "refresh" },
   { href: "/progress", label: "Progress", icon: "chart" },
