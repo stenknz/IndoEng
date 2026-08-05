@@ -10,7 +10,7 @@ const base: VocabularyWord = {
   example: "Saya minum air.",
   exampleTranslation: "I drink water.",
   category: "drinks",
-  level: 0,
+  level: 0, frequency: 1,
   familiarity: 0,
   exposures: 0,
   correct: 0,

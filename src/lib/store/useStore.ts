@@ -37,6 +37,8 @@ function emptyWord(id: string): VocabularyWord {
     example: "",
     exampleTranslation: "",
     category: "",
+    image: undefined,
+    frequency: 0,
     level: 0,
     familiarity: 0,
     exposures: 0,

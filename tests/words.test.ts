@@ -20,4 +20,13 @@ describe("word bank", () => {
       expect(w.pronunciation).toBeTruthy();
     }
   });
+
+  it("every word has a unique frequency rank", () => {
+    const ranks = WORD_BANK.map((w) => w.frequency);
+    expect(ranks.length).toBe(new Set(ranks).size);
+    for (const r of ranks) {
+      expect(r).toBeGreaterThanOrEqual(1);
+      expect(r).toBeLessThanOrEqual(WORD_BANK.length);
+    }
+  });
 });

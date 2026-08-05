@@ -32,6 +32,7 @@ export interface VocabularyWord {
   exampleTranslation: string;
   category: string;
   image?: string;
+  frequency: number;
   level: number;
   familiarity: number;
   exposures: number;

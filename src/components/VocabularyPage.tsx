@@ -54,6 +54,7 @@ export function VocabularyPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [learnedOnly, setLearnedOnly] = useState(false);
+  const [sort, setSort] = useState<"freq" | "cat">("freq");
 
   const learnedCount = useMemo(
     () =>
@@ -70,16 +71,23 @@ export function VocabularyPage() {
       const stored = state.words[w.id];
       return stored ? mergeStateWord(w, stored) : w;
     });
-    return words.filter((w) => {
-      if (category && w.category !== category) return false;
-      if (learnedOnly && !isLearned(w)) return false;
-      if (q) {
-        const hay = `${w.indonesian} ${w.english}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [state.words, query, category, learnedOnly]);
+    return words
+      .filter((w) => {
+        if (category && w.category !== category) return false;
+        if (learnedOnly && !isLearned(w)) return false;
+        if (q) {
+          const hay = `${w.indonesian} ${w.english}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      })
+      .sort((a, b) =>
+        sort === "freq"
+          ? (a.frequency ?? Number.MAX_SAFE_INTEGER) - (b.frequency ?? Number.MAX_SAFE_INTEGER)
+          : categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category) ||
+            a.indonesian.localeCompare(b.indonesian),
+      );
+  }, [state.words, query, category, learnedOnly, sort]);
 
   const chipClass = (active: boolean) =>
     `rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
@@ -137,7 +145,27 @@ export function VocabularyPage() {
         </label>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex rounded-full border border-ink/10 bg-white p-0.5">
+          <button
+            type="button"
+            onClick={() => setSort("freq")}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+              sort === "freq" ? "bg-canopy-600 text-white" : "text-muted hover:bg-canopy-50"
+            }`}
+          >
+            Paling sering
+          </button>
+          <button
+            type="button"
+            onClick={() => setSort("cat")}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+              sort === "cat" ? "bg-canopy-600 text-white" : "text-muted hover:bg-canopy-50"
+            }`}
+          >
+            Kategori
+          </button>
+        </div>
         <button
           type="button"
           onClick={() => setCategory(null)}

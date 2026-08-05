@@ -48,7 +48,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "sama-sama", english: "you're welcome" },
     ],
     reviewNote: "Greetings: hello, good morning, thank you, and you're welcome.",
-    grammarNote: null,
+    grammarNote: "No verb for 'is/am/are' in Indonesian: 'Saya Ana' = I am Ana.",
   },
   {
     id: "my-name",
@@ -97,7 +97,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "apa", english: "what" },
     ],
     reviewNote: "Ask and answer names: 'Siapa nama kamu?' (What's your name?)",
-    grammarNote: "saya = I, kamu = you",
+    grammarNote: "'Saya' = I, 'kamu' = you. No verbs for 'is/am/are' in Indonesian: 'Saya Ana' = I am Ana.",
   },
   {
     id: "numbers",
@@ -142,7 +142,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "berapa", english: "how many" },
     ],
     reviewNote: "Count from one to five and ask 'berapa' (how many).",
-    grammarNote: "satu = one, dua = two",
+    grammarNote: "'Berapa?' = how many. Numbers go before the noun and nouns never pluralise: 'dua kopi' = two coffees.",
   },
   {
     id: "food",
@@ -191,7 +191,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "enak", english: "delicious" },
     ],
     reviewNote: "Food words and how to say 'I eat...' and '...is delicious.'",
-    grammarNote: "makan = to eat",
+    grammarNote: "No conjugation for tense: 'makan' stays the same in past, present and future. 'Saya makan nasi' = I eat rice.",
   },
   {
     id: "drinks",
@@ -240,7 +240,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "mau", english: "to want" },
     ],
     reviewNote: "Drinks and the key phrase 'Saya mau minum...' (I want to drink...).",
-    grammarNote: "mau = to want",
+    grammarNote: "'Mau' (want) comes before the verb: 'Saya mau minum air' = I want to drink water.",
   },
   {
     id: "family",
@@ -287,7 +287,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "keluarga", english: "family" },
     ],
     reviewNote: "Family words: ibu (mother), ayah (father), kakak (older sibling), adik (younger sibling).",
-    grammarNote: "kakak = older sibling, adik = younger sibling",
+    grammarNote: "'Kakak' = older sibling, 'adik' = younger sibling. Age decides the word, not gender — one word covers brother and sister.",
   },
   {
     id: "my-house",
@@ -336,7 +336,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "tidur", english: "to sleep" },
     ],
     reviewNote: "Name the rooms and parts of your house.",
-    grammarNote: null,
+    grammarNote: "No articles (a/the) in Indonesian: 'rumah saya' = my house. Possessor follows the noun.",
   },
   {
     id: "things-i-like",
@@ -385,7 +385,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "teman", english: "friend" },
     ],
     reviewNote: "Say what you like: 'Saya suka...' and 'sangat' (very).",
-    grammarNote: "suka = to like, sangat = very",
+    grammarNote: "'Saya suka...' = I like... 'Sangat' (very) comes before the adjective: 'sangat enak' = very delicious.",
   },
   {
     id: "shopping",
@@ -434,7 +434,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "murah", english: "cheap" },
     ],
     reviewNote: "Shopping: 'beli' (to buy), murah (cheap), mahal (expensive).",
-    grammarNote: null,
+    grammarNote: "'Ini berapa?' = how much is this? 'Murah' = cheap, 'mahal' = expensive.",
   },
   {
     id: "restaurant",
@@ -483,7 +483,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "tagihan", english: "bill" },
     ],
     reviewNote: "Restaurant phrases: order food and ask for the bill.",
-    grammarNote: null,
+    grammarNote: "'Minta' = to ask for: 'Saya minta...' when ordering. The bill is 'tagihan'.",
   },
   {
     id: "time",
@@ -532,7 +532,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "malam", english: "night" },
     ],
     reviewNote: "Tell the time: 'Jam berapa?' (What time?) and 'pukul' (o'clock).",
-    grammarNote: "jam = hour/clock, pukul = at (o'clock)",
+    grammarNote: "'Jam berapa?' = what time? 'Pukul tiga' = at three o'clock. Add 'pagi'/'siang'/'malam' for the time of day.",
   },
   {
     id: "weather",
@@ -581,7 +581,7 @@ export const LESSONS: Lesson[] = [
       { indonesian: "cerah", english: "sunny" },
     ],
     reviewNote: "Describe the weather: hujan (rain), panas (hot), dingin (cold), cerah (sunny).",
-    grammarNote: null,
+    grammarNote: "'Hari ini' = today. Adjectives need no 'to be': 'Cuaca panas' = the weather is hot.",
   },
 ];
 

@@ -92,6 +92,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   const [step, setStep] = useState<Step>("warmup");
   const [mistakes, setMistakes] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
+  const [warmupRevealed, setWarmupRevealed] = useState<Set<string>>(new Set());
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [celebrating, setCelebrating] = useState(false);
 
@@ -112,6 +113,15 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
 
   const warmUp = lesson.warmUpIds.map(wordById).filter((w): w is VocabularyWord => Boolean(w));
   const newWords = lesson.newWordIds.map(wordById).filter((w): w is VocabularyWord => Boolean(w));
+
+  function toggleWarmupReveal(id: string) {
+    setWarmupRevealed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   function makePracticeMessages(index: number): ConversationMessage[] {
     const item = lesson.practice[index];
@@ -350,23 +360,33 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
             <>
               <Card className="p-6">
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
-                  Pemanasan — apa yang kamu ingat?
+                  Pemanasan — coba ingat dulu, lalu ketuk untuk cek.
                 </h2>
                 <div className="mt-4 space-y-3">
-                  {warmUp.map((w) => (
-                    <div
-                      key={w.id}
-                      className="flex items-center justify-between rounded-2xl border border-ink/5 bg-white px-5 py-4 shadow-card"
-                    >
-                      <div>
-                        <span className="font-display text-lg font-semibold text-ink">
-                          {w.indonesian}
-                        </span>
-                        <span className="ml-2 text-sm text-muted">{w.english}</span>
+                  {warmUp.map((w) => {
+                    const revealed = warmupRevealed.has(w.id);
+                    return (
+                      <div
+                        key={w.id}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-ink/5 bg-white px-5 py-4 shadow-card"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleWarmupReveal(w.id)}
+                          aria-expanded={revealed}
+                          className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-canopy-600/40 rounded-lg"
+                        >
+                          <span className="font-display text-lg font-semibold text-ink">
+                            {w.indonesian}
+                          </span>
+                          <span className="ml-2 text-sm text-muted">
+                            {revealed ? w.english : "(ketuk untuk ingat)"}
+                          </span>
+                        </button>
+                        <SpeakButton text={w.indonesian} />
                       </div>
-                      <SpeakButton text={w.indonesian} />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Card>
               <Button onClick={() => setStep("newwords")} className="w-full">

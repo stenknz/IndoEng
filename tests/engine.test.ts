@@ -118,7 +118,7 @@ describe("scriptedProvider", () => {
     state.words = {
       rumah: {
         id: "rumah", indonesian: "rumah", english: "house", pronunciation: "", example: "", exampleTranslation: "",
-        category: "house", level: 0, familiarity: 0.12, exposures: 1, correct: 1, mistakes: 0,
+        category: "house", level: 0, frequency: 1, familiarity: 0.12, exposures: 1, correct: 1, mistakes: 0,
         lastReviewed: 1, nextReview: null, streak: 1,
       },
     };
@@ -144,7 +144,7 @@ describe("scriptedProvider", () => {
     state.words = {
       rumah: {
         id: "rumah", indonesian: "rumah", english: "house", pronunciation: "", example: "", exampleTranslation: "",
-        category: "house", level: 0, familiarity: 0.12, exposures: 1, correct: 1, mistakes: 0,
+        category: "house", level: 0, frequency: 1, familiarity: 0.12, exposures: 1, correct: 1, mistakes: 0,
         lastReviewed: 1, nextReview: null, streak: 1,
       },
     };

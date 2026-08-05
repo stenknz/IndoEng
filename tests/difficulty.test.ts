@@ -13,8 +13,8 @@ describe("learner model", () => {
   it("counts known words by familiarity threshold", () => {
     const s = createInitialState("Sten");
     s.words = {
-      air: { ...(s.words.air ?? { id: "air", indonesian: "air", english: "water", pronunciation: "", example: "", exampleTranslation: "", category: "", level: 0, familiarity: 0, exposures: 1, correct: 1, mistakes: 0, lastReviewed: null, nextReview: null, streak: 1 }), familiarity: 0.7 },
-      nasi: { id: "nasi", indonesian: "nasi", english: "rice", pronunciation: "", example: "", exampleTranslation: "", category: "", level: 0, familiarity: 0, exposures: 0, correct: 0, mistakes: 0, lastReviewed: null, nextReview: null, streak: 0 },
+      air: { ...(s.words.air ?? { id: "air", indonesian: "air", english: "water", pronunciation: "", example: "", exampleTranslation: "", category: "", level: 0, frequency: 1, familiarity: 0, exposures: 1, correct: 1, mistakes: 0, lastReviewed: null, nextReview: null, streak: 1 }), familiarity: 0.7 },
+      nasi: { id: "nasi", indonesian: "nasi", english: "rice", pronunciation: "", example: "", exampleTranslation: "", category: "", level: 0, frequency: 1, familiarity: 0, exposures: 0, correct: 0, mistakes: 0, lastReviewed: null, nextReview: null, streak: 0 },
     };
     expect(knownWordIds(s.words)).toEqual(["air"]);
   });
@@ -24,11 +24,11 @@ describe("learner model", () => {
     s.words = {
       air: {
         id: "air", indonesian: "air", english: "water", pronunciation: "", example: "", exampleTranslation: "",
-        category: "", level: 0, familiarity: 0, exposures: 1, correct: 1, mistakes: 0, lastReviewed: 123, nextReview: null, streak: 1,
+        category: "", level: 0, frequency: 1, familiarity: 0, exposures: 1, correct: 1, mistakes: 0, lastReviewed: 123, nextReview: null, streak: 1,
       },
       nasi: {
         id: "nasi", indonesian: "nasi", english: "rice", pronunciation: "", example: "", exampleTranslation: "",
-        category: "", level: 0, familiarity: 0.8, exposures: 1, correct: 1, mistakes: 0, lastReviewed: null, nextReview: null, streak: 1,
+        category: "", level: 0, frequency: 1, familiarity: 0.8, exposures: 1, correct: 1, mistakes: 0, lastReviewed: null, nextReview: null, streak: 1,
       },
     };
     expect(metWordIds(s.words)).toEqual(["air"]);

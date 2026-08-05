@@ -20,6 +20,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Hello, I am Ana.",
     category: "greetings",
     level: 0,
+    frequency: 69,
     ...unlearned,
   },
   {
@@ -31,6 +32,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Hi, where are you?",
     category: "greetings",
     level: 0,
+    frequency: 70,
     ...unlearned,
   },
   {
@@ -42,6 +44,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Good morning, I drink coffee.",
     category: "greetings",
     level: 0,
+    frequency: 71,
     ...unlearned,
   },
   {
@@ -53,6 +56,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Good evening, mother.",
     category: "greetings",
     level: 0,
+    frequency: 72,
     ...unlearned,
   },
   {
@@ -64,6 +68,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Thank you, this is good.",
     category: "greetings",
     level: 0,
+    frequency: 73,
     ...unlearned,
   },
   {
@@ -75,6 +80,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Yes, you're welcome.",
     category: "greetings",
     level: 0,
+    frequency: 74,
     ...unlearned,
   },
   {
@@ -86,6 +92,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Sorry, I don't want to.",
     category: "greetings",
     level: 0,
+    frequency: 75,
     ...unlearned,
   },
   {
@@ -97,6 +104,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Yes, I want rice.",
     category: "yesno",
     level: 0,
+    frequency: 5,
     ...unlearned,
   },
   {
@@ -108,6 +116,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "No, this is expensive.",
     category: "yesno",
     level: 0,
+    frequency: 6,
     ...unlearned,
   },
   {
@@ -119,6 +128,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I drink water.",
     category: "people",
     level: 0,
+    frequency: 1,
     ...unlearned,
   },
   {
@@ -130,6 +140,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "You drink tea.",
     category: "people",
     level: 0,
+    frequency: 2,
     ...unlearned,
   },
   {
@@ -141,6 +152,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "This is my house.",
     category: "people",
     level: 0,
+    frequency: 3,
     ...unlearned,
   },
   {
@@ -152,6 +164,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "That is your house.",
     category: "people",
     level: 0,
+    frequency: 4,
     ...unlearned,
   },
   {
@@ -164,6 +177,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "people",
     image: "/images/people/orang.jpg",
     level: 0,
+    frequency: 11,
     ...unlearned,
   },
   {
@@ -176,6 +190,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "people",
     image: "/images/people/teman.jpg",
     level: 0,
+    frequency: 12,
     ...unlearned,
   },
   {
@@ -188,6 +203,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "family",
     image: "/images/family/kakak.jpg",
     level: 0,
+    frequency: 49,
     ...unlearned,
   },
   {
@@ -200,6 +216,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "family",
     image: "/images/family/adik.jpg",
     level: 0,
+    frequency: 50,
     ...unlearned,
   },
   {
@@ -212,6 +229,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "family",
     image: "/images/family/ibu.jpg",
     level: 0,
+    frequency: 47,
     ...unlearned,
   },
   {
@@ -224,6 +242,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "family",
     image: "/images/family/ayah.jpg",
     level: 0,
+    frequency: 48,
     ...unlearned,
   },
   {
@@ -236,6 +255,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "actions",
     image: "/images/actions/makan.jpg",
     level: 0,
+    frequency: 14,
     ...unlearned,
   },
   {
@@ -248,6 +268,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "actions",
     image: "/images/actions/minum.jpg",
     level: 0,
+    frequency: 15,
     ...unlearned,
   },
   {
@@ -259,6 +280,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I want to drink water.",
     category: "actions",
     level: 0,
+    frequency: 8,
     ...unlearned,
   },
   {
@@ -270,6 +292,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I like to eat rice.",
     category: "likes",
     level: 0,
+    frequency: 9,
     ...unlearned,
   },
   {
@@ -282,6 +305,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "food",
     image: "/images/food/nasi.jpg",
     level: 0,
+    frequency: 18,
     ...unlearned,
   },
   {
@@ -294,6 +318,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "food",
     image: "/images/food/makanan.jpg",
     level: 0,
+    frequency: 41,
     ...unlearned,
   },
   {
@@ -306,6 +331,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "drinks",
     image: "/images/drinks/air.jpg",
     level: 0,
+    frequency: 17,
     ...unlearned,
   },
   {
@@ -318,6 +344,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "drinks",
     image: "/images/drinks/kopi.jpg",
     level: 0,
+    frequency: 19,
     ...unlearned,
   },
   {
@@ -330,6 +357,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "drinks",
     image: "/images/drinks/teh.jpg",
     level: 0,
+    frequency: 20,
     ...unlearned,
   },
   {
@@ -342,6 +370,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "drinks",
     image: "/images/drinks/susu.jpg",
     level: 0,
+    frequency: 80,
     ...unlearned,
   },
   {
@@ -354,6 +383,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "drinks",
     image: "/images/drinks/minuman.jpg",
     level: 0,
+    frequency: 42,
     ...unlearned,
   },
   {
@@ -365,6 +395,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "This rice is delicious.",
     category: "likes",
     level: 0,
+    frequency: 43,
     ...unlearned,
   },
   {
@@ -376,6 +407,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "This book is good.",
     category: "likes",
     level: 0,
+    frequency: 44,
     ...unlearned,
   },
   {
@@ -387,6 +419,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "This coffee is cheap.",
     category: "likes",
     level: 0,
+    frequency: 45,
     ...unlearned,
   },
   {
@@ -398,6 +431,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "This house is expensive.",
     category: "likes",
     level: 0,
+    frequency: 46,
     ...unlearned,
   },
   {
@@ -409,6 +443,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "This coffee is very hot.",
     category: "likes",
     level: 0,
+    frequency: 10,
     ...unlearned,
   },
   {
@@ -421,6 +456,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "weather",
     image: "/images/weather/panas.jpg",
     level: 0,
+    frequency: 53,
     ...unlearned,
   },
   {
@@ -433,6 +469,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "weather",
     image: "/images/weather/dingin.jpg",
     level: 0,
+    frequency: 54,
     ...unlearned,
   },
   {
@@ -445,6 +482,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "weather",
     image: "/images/weather/hujan.jpg",
     level: 0,
+    frequency: 52,
     ...unlearned,
   },
   {
@@ -457,6 +495,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "weather",
     image: "/images/weather/cerah.jpg",
     level: 0,
+    frequency: 55,
     ...unlearned,
   },
   {
@@ -468,6 +507,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Today I eat rice.",
     category: "time",
     level: 0,
+    frequency: 21,
     ...unlearned,
   },
   {
@@ -480,6 +520,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "time",
     image: "/images/time/jam.jpg",
     level: 0,
+    frequency: 22,
     ...unlearned,
   },
   {
@@ -491,6 +532,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "At one o'clock, I eat.",
     category: "time",
     level: 0,
+    frequency: 85,
     ...unlearned,
   },
   {
@@ -502,6 +544,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I want one coffee.",
     category: "numbers",
     level: 0,
+    frequency: 58,
     ...unlearned,
   },
   {
@@ -513,6 +556,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I want two coffees.",
     category: "numbers",
     level: 0,
+    frequency: 59,
     ...unlearned,
   },
   {
@@ -524,6 +568,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I buy three books.",
     category: "numbers",
     level: 0,
+    frequency: 60,
     ...unlearned,
   },
   {
@@ -535,6 +580,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I buy four books.",
     category: "numbers",
     level: 0,
+    frequency: 61,
     ...unlearned,
   },
   {
@@ -546,6 +592,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I buy five books.",
     category: "numbers",
     level: 0,
+    frequency: 62,
     ...unlearned,
   },
   {
@@ -557,6 +604,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "At six o'clock, I drink coffee.",
     category: "numbers",
     level: 0,
+    frequency: 63,
     ...unlearned,
   },
   {
@@ -568,6 +616,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "At seven o'clock, I eat rice.",
     category: "numbers",
     level: 0,
+    frequency: 64,
     ...unlearned,
   },
   {
@@ -579,6 +628,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "At eight o'clock, I drink milk.",
     category: "numbers",
     level: 0,
+    frequency: 65,
     ...unlearned,
   },
   {
@@ -590,6 +640,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "At nine o'clock, I eat.",
     category: "numbers",
     level: 0,
+    frequency: 66,
     ...unlearned,
   },
   {
@@ -601,6 +652,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "I buy ten books.",
     category: "numbers",
     level: 0,
+    frequency: 67,
     ...unlearned,
   },
   {
@@ -612,6 +664,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "How much is this?",
     category: "numbers",
     level: 0,
+    frequency: 68,
     ...unlearned,
   },
   {
@@ -623,6 +676,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "What is this?",
     category: "questions",
     level: 0,
+    frequency: 7,
     ...unlearned,
   },
   {
@@ -634,6 +688,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Who are you?",
     category: "questions",
     level: 0,
+    frequency: 83,
     ...unlearned,
   },
   {
@@ -645,6 +700,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Where are you?",
     category: "questions",
     level: 0,
+    frequency: 84,
     ...unlearned,
   },
   {
@@ -657,6 +713,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "house",
     image: "/images/house/rumah.jpg",
     level: 0,
+    frequency: 26,
     ...unlearned,
   },
   {
@@ -669,6 +726,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "house",
     image: "/images/house/pintu.jpg",
     level: 0,
+    frequency: 28,
     ...unlearned,
   },
   {
@@ -681,6 +739,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "house",
     image: "/images/house/kamar.jpg",
     level: 0,
+    frequency: 27,
     ...unlearned,
   },
   {
@@ -693,6 +752,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "places",
     image: "/images/places/jalan.jpg",
     level: 0,
+    frequency: 32,
     ...unlearned,
   },
   {
@@ -705,6 +765,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "places",
     image: "/images/places/bus.jpg",
     level: 0,
+    frequency: 34,
     ...unlearned,
   },
   {
@@ -717,6 +778,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "places",
     image: "/images/places/kereta.jpg",
     level: 0,
+    frequency: 35,
     ...unlearned,
   },
   {
@@ -729,6 +791,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "places",
     image: "/images/places/kantor.jpg",
     level: 0,
+    frequency: 37,
     ...unlearned,
   },
   {
@@ -741,6 +804,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "places",
     image: "/images/places/sekolah.jpg",
     level: 0,
+    frequency: 36,
     ...unlearned,
   },
   {
@@ -753,6 +817,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "shopping",
     image: "/images/shopping/beli.jpg",
     level: 0,
+    frequency: 38,
     ...unlearned,
   },
   {
@@ -765,6 +830,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "shopping",
     image: "/images/shopping/uang.jpg",
     level: 0,
+    frequency: 39,
     ...unlearned,
   },
   {
@@ -777,6 +843,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "restaurant",
     image: "/images/restaurant/pesan.jpg",
     level: 0,
+    frequency: 81,
     ...unlearned,
   },
   {
@@ -789,6 +856,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "house",
     image: "/images/house/buku.jpg",
     level: 0,
+    frequency: 31,
     ...unlearned,
   },
   {
@@ -800,6 +868,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "My name is Ana.",
     category: "people",
     level: 0,
+    frequency: 13,
     ...unlearned,
   },
   {
@@ -812,6 +881,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "food",
     image: "/images/food/ayam.jpg",
     level: 0,
+    frequency: 76,
     ...unlearned,
   },
   {
@@ -824,6 +894,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "food",
     image: "/images/food/ikan.jpg",
     level: 0,
+    frequency: 77,
     ...unlearned,
   },
   {
@@ -836,6 +907,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "food",
     image: "/images/food/roti.jpg",
     level: 0,
+    frequency: 78,
     ...unlearned,
   },
   {
@@ -848,6 +920,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "family",
     image: "/images/family/keluarga.jpg",
     level: 0,
+    frequency: 51,
     ...unlearned,
   },
   {
@@ -860,6 +933,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "house",
     image: "/images/house/jendela.jpg",
     level: 0,
+    frequency: 29,
     ...unlearned,
   },
   {
@@ -872,6 +946,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "house",
     image: "/images/house/dapur.jpg",
     level: 0,
+    frequency: 30,
     ...unlearned,
   },
   {
@@ -884,6 +959,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "actions",
     image: "/images/actions/tidur.jpg",
     level: 0,
+    frequency: 16,
     ...unlearned,
   },
   {
@@ -896,6 +972,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "places",
     image: "/images/places/pasar.jpg",
     level: 0,
+    frequency: 33,
     ...unlearned,
   },
   {
@@ -908,6 +985,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "shopping",
     image: "/images/shopping/barang.jpg",
     level: 0,
+    frequency: 40,
     ...unlearned,
   },
   {
@@ -920,6 +998,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "restaurant",
     image: "/images/restaurant/tagihan.jpg",
     level: 0,
+    frequency: 82,
     ...unlearned,
   },
   {
@@ -932,6 +1011,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "food",
     image: "/images/food/sate.jpg",
     level: 0,
+    frequency: 79,
     ...unlearned,
   },
   {
@@ -943,6 +1023,7 @@ export const WORD_BANK: VocabularyWord[] = [
     exampleTranslation: "Now it is two o'clock.",
     category: "time",
     level: 0,
+    frequency: 23,
     ...unlearned,
   },
   {
@@ -955,6 +1036,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "time",
     image: "/images/time/malam.jpg",
     level: 0,
+    frequency: 24,
     ...unlearned,
   },
   {
@@ -967,6 +1049,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "time",
     image: "/images/time/siang.jpg",
     level: 0,
+    frequency: 25,
     ...unlearned,
   },
   {
@@ -979,6 +1062,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "weather",
     image: "/images/weather/cuaca.jpg",
     level: 0,
+    frequency: 56,
     ...unlearned,
   },
   {
@@ -991,6 +1075,7 @@ export const WORD_BANK: VocabularyWord[] = [
     category: "weather",
     image: "/images/weather/mendung.jpg",
     level: 0,
+    frequency: 57,
     ...unlearned,
   },
 ];
