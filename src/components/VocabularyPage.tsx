@@ -130,6 +130,7 @@ export function VocabularyPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Indonesian or English…"
+            aria-label="Cari kata dalam bahasa Indonesia atau Inggris"
             autoComplete="off"
             className="w-full rounded-xl border border-ink/10 bg-white py-3 pl-10 pr-4 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"
           />

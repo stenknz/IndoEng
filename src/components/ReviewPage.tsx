@@ -313,6 +313,7 @@ export function ReviewPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ketik dalam bahasa Indonesia…"
+              aria-label="Review: ketik jawaban bahasa Indonesia"
               autoComplete="off"
               autoFocus
               className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"

@@ -257,6 +257,7 @@ export function ConversationPage() {
           onChange={(e) => setInput(e.target.value)}
           disabled={busy}
           placeholder="Tulis dalam bahasa Indonesia…"
+          aria-label="Ngobrol: tulis pesan bahasa Indonesia"
           autoComplete="off"
           className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15 disabled:bg-mist/60"
         />

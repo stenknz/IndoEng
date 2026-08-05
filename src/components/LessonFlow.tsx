@@ -56,6 +56,7 @@ function ChatBubble({
   return (
     <div className={`flex ${tutor ? "justify-start" : "justify-end"}`}>
       <div
+        lang="id"
         className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-card ${
           tutor
             ? "rounded-bl-sm border border-ink/5 bg-white text-ink"
@@ -376,7 +377,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
                           aria-expanded={revealed}
                           className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-canopy-600/40 rounded-lg"
                         >
-                          <span className="font-display text-lg font-semibold text-ink">
+                          <span lang="id" className="font-display text-lg font-semibold text-ink">
                             {w.indonesian}
                           </span>
                           <span className="ml-2 text-sm text-muted">
@@ -425,7 +426,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
                         </span>
                       )}
                       <div>
-                        <div className="font-display text-2xl font-bold text-ink">
+                        <div className="font-display text-2xl font-bold text-ink" lang="id">
                           {w.indonesian}
                         </div>
                         {state.profile.pronunciationOn && (
@@ -535,6 +536,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
               onChange={(e) => setPracticeInput(e.target.value)}
               disabled={practiceBusy || practiceFeedbackType === "ok"}
               placeholder="Tulis dalam bahasa Indonesia…"
+              aria-label="Latihan: tulis jawaban dalam bahasa Indonesia"
               autoComplete="off"
               className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15 disabled:bg-mist/60"
             />
@@ -597,6 +599,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
                 value={recallInput}
                 onChange={(e) => setRecallInput(e.target.value)}
                 placeholder="Ketik jawaban…"
+                aria-label="Ingatan: ketik jawaban bahasa Indonesia"
                 autoComplete="off"
                 className="flex-1 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"
               />

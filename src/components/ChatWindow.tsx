@@ -31,7 +31,7 @@ function TutorBubble({
             <span className="mt-1.5">
               <Waveform className="opacity-70" />
             </span>
-            <span>{message.content}</span>
+            <span lang="id">{message.content}</span>
           </div>
           <SpeakButton text={message.content} />
         </div>
@@ -83,7 +83,7 @@ function TutorBubble({
 function LearnerBubble({ message }: { message: ConversationMessage }) {
   return (
     <div className="flex justify-end">
-      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-canopy-600 px-4 py-3 text-sm leading-relaxed text-white shadow-card">
+      <div lang="id" className="max-w-[85%] rounded-2xl rounded-br-sm bg-canopy-600 px-4 py-3 text-sm leading-relaxed text-white shadow-card">
         {message.content}
       </div>
     </div>
