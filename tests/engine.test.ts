@@ -35,6 +35,16 @@ describe("matchAnswer", () => {
     expect(matchAnswer("sama sama", ["sama-sama"]).correct).toBe(true);
     expect(matchAnswer("sama-sama", ["sama-sama"]).correct).toBe(true);
   });
+
+  it("does not mark a negated answer as correct", () => {
+    expect(matchAnswer("Saya tidak makan ayam", ["makan", "ayam"]).correct).toBe(false);
+    expect(matchAnswer("Bukan nasi", ["nasi"]).correct).toBe(false);
+  });
+
+  it("allows negation when the expected answer is itself negative", () => {
+    expect(matchAnswer("Saya tidak mau", ["tidak"]).correct).toBe(true);
+    expect(matchAnswer("tidak", ["tidak"]).correct).toBe(true);
+  });
 });
 
 describe("buildCorrection", () => {

@@ -53,6 +53,7 @@ export function ReviewPage() {
 
   const startedAt = useRef(Date.now());
   const sessionRecorded = useRef(false);
+  const recycledRef = useRef<Set<string>>(new Set());
 
   const [queue, setQueue] = useState<VocabularyWord[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -141,6 +142,13 @@ export function ReviewPage() {
     } else {
       setStreak(0);
       const nextFails = fails + 1;
+      // Within-session recycling: words missed on the first attempt are
+      // re-queued to the end of today's review so the learner re-tests them
+      // before the session ends (error-driven restudy is strongly effective).
+      if (nextFails === 1 && !recycledRef.current.has(word.id)) {
+        recycledRef.current.add(word.id);
+        setQueue((q) => (q ? [...q, word] : q));
+      }
       setFails(nextFails);
       if (nextFails >= 2) {
         setRevealed(true);

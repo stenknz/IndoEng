@@ -21,6 +21,7 @@ export function ConversationPage() {
   const bumpWord = useStore((s) => s.bumpWord);
   const updateProfile = useStore((s) => s.updateProfile);
   const saveConversation = useStore((s) => s.saveConversation);
+  const addSession = useStore((s) => s.addSession);
 
   const engineRef = useRef<TutorEngine | null>(null);
   if (!engineRef.current) engineRef.current = new TutorEngine(autoProvider);
@@ -33,6 +34,35 @@ export function ConversationPage() {
   const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState("");
   const [startedAt, setStartedAt] = useState(0);
+
+  const hadUserTurnRef = useRef(false);
+  const bumpedWordsRef = useRef(0);
+  const sessionCommittedRef = useRef(false);
+  const messagesRef = useRef<ConversationMessage[]>([]);
+  messagesRef.current = messages;
+
+  // Record a learning session when the learner leaves the conversation, so
+  // time spent chatting counts toward the daily goal and streak.
+  useEffect(() => {
+    return () => {
+      const s = sessionCommittedRef.current;
+      if (s || !hadUserTurnRef.current) return;
+      sessionCommittedRef.current = true;
+      const durationMin = Math.max(
+        1,
+        Math.round((Date.now() - startedAt) / 60000),
+      );
+      addSession({
+        id: crypto.randomUUID(),
+        ts: Date.now(),
+        durationMin,
+        wordsReviewed: bumpedWordsRef.current,
+        newWords: 0,
+        recallRate: 1,
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startedAt]);
 
   async function persistConversation(
     id: string,
@@ -94,6 +124,7 @@ export function ConversationPage() {
     setBusy(true);
     setError(null);
     setInput("");
+    hadUserTurnRef.current = true;
     const learnerMsg: ConversationMessage = {
       id: crypto.randomUUID(),
       kind: "learner",
@@ -113,7 +144,10 @@ export function ConversationPage() {
       const updated = [...history, out.message];
       setMessages(updated);
       for (const a of out.attempts) recordAttempt(a);
-      for (const [id, res] of Object.entries(out.wordsToRecord)) bumpWord(id, res);
+      for (const [id, res] of Object.entries(out.wordsToRecord)) {
+        bumpWord(id, res);
+        bumpedWordsRef.current += 1;
+      }
       updateProfile({
         currentDifficulty: out.adaptedProfile.currentDifficulty,
         level: out.adaptedProfile.level,

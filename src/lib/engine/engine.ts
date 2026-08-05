@@ -2,6 +2,7 @@ import { matchAnswer } from "@/lib/engine/matcher";
 import { scriptedProvider } from "@/lib/engine/scripted";
 import type { LanguageModelProvider, TutorContext, TutorResponse } from "@/lib/engine/provider";
 import { adaptProfile, computeLearnerStats } from "@/lib/difficulty/learnerModel";
+import { WORD_BANK } from "@/lib/data/words";
 import type { ConversationMessage, LearnerState, LearningProfile, Lesson, PracticeAttempt } from "@/lib/types";
 import type { WordResult } from "@/lib/store/useStore";
 
@@ -43,7 +44,8 @@ export class TutorEngine {
     const attempts: PracticeAttempt[] = [];
     const wordsToRecord: Record<string, WordResult> = {};
     if (input) {
-      const expected = res.expectedWords ?? [];
+      const bankIds = new Set(WORD_BANK.map((w) => w.id));
+      const expected = (res.expectedWords ?? []).filter((id) => bankIds.has(id));
       if (expected.length > 0) {
         const result = matchAnswer(input, expected);
         attempts.push({

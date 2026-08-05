@@ -16,6 +16,7 @@ export interface TutorReply {
   text: string;
   hint?: string;
   translation?: string;
+  expectedWords?: string[];
 }
 
 const LEVEL_NAMES: Record<number, string> = {
@@ -83,8 +84,14 @@ export function parseTutorReply(content: string): TutorReply {
         text?: unknown;
         hint?: unknown;
         translation?: unknown;
+        expectedWords?: unknown;
       };
       if (parsed && typeof parsed.text === "string") {
+        const expectedWords = Array.isArray(parsed.expectedWords)
+          ? parsed.expectedWords.filter(
+              (w): w is string => typeof w === "string" && w.trim().length > 0,
+            )
+          : undefined;
         return {
           text: parsed.text.trim(),
           hint: typeof parsed.hint === "string" ? parsed.hint : undefined,
@@ -92,6 +99,7 @@ export function parseTutorReply(content: string): TutorReply {
             typeof parsed.translation === "string"
               ? parsed.translation
               : undefined,
+          expectedWords: expectedWords && expectedWords.length > 0 ? expectedWords : undefined,
         };
       }
     } catch {

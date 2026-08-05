@@ -17,6 +17,7 @@ import type {
   ConversationMessage,
   Lesson,
   PracticeAttempt,
+  RecallItem,
   VocabularyWord,
 } from "@/lib/types";
 
@@ -85,6 +86,8 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   const startedAt = useRef(Date.now());
   const touchedRef = useRef<Set<string>>(new Set());
   const finishingRef = useRef(false);
+  const recallQueueRef = useRef<RecallItem[]>(lesson.recall);
+  const recallRecycledRef = useRef<Set<string>>(new Set());
 
   const [step, setStep] = useState<Step>("warmup");
   const [mistakes, setMistakes] = useState(0);
@@ -198,7 +201,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
     e.preventDefault();
     const input = recallInput.trim();
     if (!input || recallRevealed) return;
-    const item = lesson.recall[recallIndex];
+    const item = recallQueueRef.current[recallIndex];
     const result = matchAnswer(input, [item.indonesian]);
     const word = WORD_BANK.find(
       (w) => w.indonesian.toLowerCase() === item.indonesian.toLowerCase(),
@@ -227,7 +230,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       setRecallFeedbackType("ok");
       const idx = recallIndex;
       setTimeout(() => {
-        if (idx + 1 < lesson.recall.length) {
+        if (idx + 1 < recallQueueRef.current.length) {
           setRecallIndex(idx + 1);
           setRecallInput("");
           setRecallFeedback(null);
@@ -240,8 +243,14 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       }, 900);
     } else {
       setMistakes((m) => m + 1);
-      setRecallFeedbackType("warn");
       const fails = recallFails + 1;
+      // Within-session recycling: re-queue the missed word once so it is
+      // re-tested again before the lesson ends (error-driven restudy).
+      if (fails === 1 && !recallRecycledRef.current.has(item.indonesian)) {
+        recallRecycledRef.current.add(item.indonesian);
+        recallQueueRef.current = [...recallQueueRef.current, item];
+      }
+      setRecallFeedbackType("warn");
       setRecallFails(fails);
       if (fails >= 2) {
         setRecallRevealed(true);
@@ -253,7 +262,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
   }
 
   function nextRecall() {
-    if (recallIndex + 1 < lesson.recall.length) {
+    if (recallIndex + 1 < recallQueueRef.current.length) {
       setRecallIndex(recallIndex + 1);
       setRecallInput("");
       setRecallFeedback(null);
@@ -522,7 +531,7 @@ export function LessonFlow({ lesson }: { lesson: Lesson }) {
       {step === "recall" && recallItem && (
         <Card className="p-6">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
-            Ingatan {recallIndex + 1} dari {lesson.recall.length}
+            Ingatan {recallIndex + 1} dari {recallQueueRef.current.length}
           </h2>
           <div className="mt-4 rounded-2xl bg-mist/70 p-6 text-center">
             {(() => {

@@ -32,6 +32,7 @@ export const openaiCompatibleProvider: AIProvider = {
         text: data.text,
         hint: data.hint,
         translation: data.translation,
+        expectedWords: data.expectedWords,
         expectAnswer: true,
       };
     } catch {

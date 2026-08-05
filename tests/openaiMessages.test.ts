@@ -59,6 +59,20 @@ describe("parseTutorReply", () => {
     expect(r.translation).toBe("What do you eat?");
   });
 
+  it("extracts expectedWords from a JSON reply", () => {
+    const r = parseTutorReply(
+      '{"text":"Kamu makan apa?","expectedWords":["makan","nasi"],"translation":"What do you eat?"}',
+    );
+    expect(r.expectedWords).toEqual(["makan", "nasi"]);
+  });
+
+  it("ignores malformed expectedWords", () => {
+    const r = parseTutorReply('{"text":"Ini air.","expectedWords":"air"}');
+    expect(r.text).toBe("Ini air.");
+    expect(r.expectedWords).toBeUndefined();
+  });
+
+
   it("extracts JSON embedded in surrounding text", () => {
     const r = parseTutorReply('Sure! Here is my reply: {"text":"Ini air.","hint":"water"}');
     expect(r.text).toBe("Ini air.");
