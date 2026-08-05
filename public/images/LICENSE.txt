@@ -1,0 +1,20 @@
+# Image credits
+
+All images in this directory were downloaded from Wikimedia Commons as part of
+the app's word-image feature. Each file is used under the license recorded for
+it in `attributions.json` (same directory), which lists, per word:
+
+- the local file path
+- the Wikimedia Commons file title
+- the Commons description page URL
+- the author
+- the license short name
+- the final dimensions
+
+Licenses in use include CC0, Public Domain, CC BY, and CC BY-SA
+(attribution required). No image is redistributed without a documented,
+permissive license. Attribution is satisfied by the per-file entry in
+`attributions.json`.
+
+To regenerate or extend the set, run `node scripts/fetch-images.mjs` from the
+repository root.
