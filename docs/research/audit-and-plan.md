@@ -77,9 +77,12 @@ Kak is **moderately effective** today: strong for very-early A1 vocabulary and h
 
 ## 6. Deliverables status
 
-- [x] Audit report (this doc §2)
-- [x] Research summary with citations (this doc §3; full brief in `docs/research/language-learning-brief.md`)
+- [x] Audit report (this doc §2; full brief in `docs/research/language-learning-brief.md`)
+- [x] Research summary with citations (this doc §3; full in `docs/research/language-learning-brief.md`)
 - [x] Comparison against leading platforms (§4; full in `docs/research/competitor-comparison.md`)
 - [x] Prioritized implementation plan (§5)
-- [ ] Completed code changes (P0–P1 in progress)
-- [ ] Documentation, tests, benchmarks, accessibility review (in progress)
+- [x] Completed code changes — P0 (SRS overhaul, in-session recycling, negation guard, AI→SRS loop), P1 (frequency ranks, active warmup, grammar bites), Quick Translate
+- [x] Documentation for every major feature (`docs/features/learning-system.md`)
+- [x] Test results + performance benchmarks (`docs/verification-report.md`)
+- [x] Accessibility review (`docs/accessibility-review.md`)
+- [x] Future enhancement suggestions (verification report §Known trade-offs; audit-and-plan §5 P2/P3)
