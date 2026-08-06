@@ -72,14 +72,16 @@ export async function refreshSession(db: Db, refreshToken: string, meta: { ip?: 
   if (row.expiresAt < Date.now()) throw new HttpError(401, "Refresh token expired");
   const user = await findUserById(db, row.userId);
   if (!user || user.disabledAt) throw new HttpError(401, "Invalid refresh token");
-  const cfg = loadConfig();
   const next = generateRefreshToken();
-  await rotateRefreshTokenRow(db, row.id, hashToken(next), Date.now() + cfg.sessionTtlHours * 3600 * 1000);
+  // Preserve the original expiry: rotation moves the hash onto a fresh token
+  // but keeps the fixed window, so a remember-me session is not collapsed to
+  // the session TTL on the first refresh.
+  await rotateRefreshTokenRow(db, row.id, hashToken(next), row.expiresAt);
   return {
     accessToken: await signAccessToken({ userId: user.id, role: user.role }),
     refreshToken: next,
     user: toPublic(user),
-    refreshMaxAgeSeconds: cfg.sessionTtlHours * 3600,
+    refreshMaxAgeSeconds: Math.max(1, Math.floor((row.expiresAt - Date.now()) / 1000)),
   };
 }
 

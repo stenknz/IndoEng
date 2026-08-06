@@ -22,9 +22,13 @@ export function createRateLimiter({ windowMs, max }: { windowMs: number; max: nu
   };
 }
 
-export function clientIp(request: Request, trustProxy: boolean): string {
-  const xff = request.headers.get("x-forwarded-for");
-  if (trustProxy && xff) return xff.split(",")[0]?.trim() || "unknown";
-  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    ?? "unknown";
+export function clientIp(request: Request, trustProxy: boolean, directIp?: string | null): string {
+  if (trustProxy) {
+    const xff = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    return xff || directIp || "unknown";
+  }
+  // Never trust X-Forwarded-For unless the deployment declares a trusted
+  // proxy: it is client-controllable and lets an attacker rotate IPs to
+  // bypass rate limiting.
+  return directIp || "unknown";
 }

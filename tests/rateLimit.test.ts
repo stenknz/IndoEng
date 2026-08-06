@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createRateLimiter } from "@/lib/auth/rateLimit";
+import { createRateLimiter, clientIp } from "@/lib/auth/rateLimit";
 
 describe("rateLimit", () => {
   it("allows up to max then blocks", () => {
@@ -16,5 +16,15 @@ describe("rateLimit", () => {
     expect(limiter("x").allowed).toBe(true);
     expect(limiter("y").allowed).toBe(true);
     expect(limiter("x").allowed).toBe(false);
+  });
+  it("ignores a spoofed X-Forwarded-For when trustProxy is false", () => {
+    const req = new Request("http://x/", { headers: { "x-forwarded-for": "1.2.3.4, 5.6.7.8" } });
+    expect(clientIp(req, false, "9.9.9.9")).toBe("9.9.9.9");
+    expect(clientIp(req, false)).toBe("unknown");
+  });
+  it("prefers X-Forwarded-For when trustProxy is true", () => {
+    const req = new Request("http://x/", { headers: { "x-forwarded-for": "1.2.3.4, 5.6.7.8" } });
+    expect(clientIp(req, true, "9.9.9.9")).toBe("1.2.3.4");
+    expect(clientIp(req, true)).toBe("1.2.3.4");
   });
 });

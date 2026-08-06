@@ -48,6 +48,20 @@ describe("authService", () => {
     await setUserDisabled(db, s.user.id, Date.now());
     await expect(login(db, { email: "a@b.c", password: "password123", remember: false })).rejects.toMatchObject({ status: 401 });
   });
+  it("rejects a disabled user at refresh", async () => {
+    const s = await register(db, { email: "a@b.c", name: "A", password: "password123" });
+    const { setUserDisabled } = await import("@/lib/repo/users");
+    await setUserDisabled(db, s.user.id, Date.now());
+    await expect(refreshSession(db, s.refreshToken, {})).rejects.toMatchObject({ status: 401 });
+  });
+  it("preserves the remember-me TTL across refresh", async () => {
+    await register(db, { email: "a@b.c", name: "A", password: "password123" });
+    const s = await login(db, { email: "a@b.c", password: "password123", remember: true });
+    expect(s.refreshMaxAgeSeconds).toBeGreaterThan(29 * 24 * 3600);
+    const s2 = await refreshSession(db, s.refreshToken, {});
+    expect(s2.refreshMaxAgeSeconds).toBeGreaterThan(29 * 24 * 3600);
+    expect(s2.refreshMaxAgeSeconds).toBeLessThanOrEqual(s.refreshMaxAgeSeconds);
+  });
   it("validates input via zod", async () => {
     await expect(register(db, { email: "not-an-email", name: "A", password: "password123" })).rejects.toMatchObject({ status: 400 });
     await expect(register(db, { email: "a@b.c", name: "A", password: "short" })).rejects.toMatchObject({ status: 400 });

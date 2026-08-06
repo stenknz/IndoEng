@@ -11,6 +11,9 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/auth/register")) {
+    // Next v15 removed request.ip, so the Edge middleware has no trusted
+    // direct client IP; when trustProxy=false we must not trust client-supplied
+    // forwarding headers, so clientIp keys on a shared "unknown" bucket.
     const ip = clientIp(request, loadConfig().trustProxy);
     const r = authLimiter(ip);
     if (!r.allowed) {
