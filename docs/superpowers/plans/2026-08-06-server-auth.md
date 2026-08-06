@@ -1343,10 +1343,14 @@ export async function middleware(request: NextRequest) {
   if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   try {
     const payload = await verifyAccessToken(token);
-    const res = NextResponse.next();
-    res.headers.set("x-user-id", payload.userId);
-    res.headers.set("x-user-role", payload.role);
-    return res;
+    // Rewrite the REQUEST headers the route handler will see — this overwrites
+    // any client-supplied x-user-id/x-user-role, closing the spoofing hole.
+    // (Setting headers on the returned NextResponse sets RESPONSE headers,
+    // which the route's `request` object would never see.)
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-user-id", payload.userId);
+    requestHeaders.set("x-user-role", payload.role);
+    return NextResponse.next({ request: { headers: requestHeaders } });
   } catch (e) {
     if (e instanceof JwtError) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     throw e;
