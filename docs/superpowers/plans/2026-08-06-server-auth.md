@@ -523,18 +523,18 @@ export function generateRefreshToken(): string {
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `npx vitest run tests/password.test.ts tests/jwt.test.ts`
-Expected: PASS (set `JWT_SECRET` + `DATABASE_URL` in a `.env.test.local` or the test env — see Task 2 note below).
+Expected: PASS (set `JWT_SECRET` + `DATABASE_URL` for the test process — see Task 2 note below).
 
-> **Test env note:** `jwt.ts` calls `loadConfig()` which requires `JWT_SECRET`. Configure Vitest to load a `.env.test.local` with `JWT_SECRET` (≥32 chars) and a dummy `DATABASE_URL` by adding to `vitest.config.ts`:
+> **Test env note:** `jwt.ts` calls `loadConfig()` which requires `JWT_SECRET`. Add a Vitest setup file `tests/setup.ts`:
 > ```ts
-> import { defineConfig } from "vitest/config";
-> import "dotenv/config"; // reads .env.test.local when NODE_ENV=test
-> export default defineConfig({
->   test: { include: ["tests/**/*.test.ts"], env: { NODE_ENV: "test" } },
->   esbuild: { jsx: "automatic" },
-> });
+> process.env.JWT_SECRET = process.env.JWT_SECRET ?? "a".repeat(48);
+> process.env.DATABASE_URL = process.env.DATABASE_URL ?? "postgres://u:p@localhost:5432/kak_test";
 > ```
-> Add `dotenv` as a devDependency and create `.env.test.local` (gitignored, add `*.test.local` to `.gitignore`) with `JWT_SECRET` and `DATABASE_URL`. `loadConfig` reads `process.env`, and Vitest sets `NODE_ENV=test` so `cookieSecure` defaults off.
+> and register it in `vitest.config.ts`:
+> ```ts
+> test: { environment: "node", include: ["tests/**/*.test.{ts,tsx}"], setupFiles: ["tests/setup.ts"] },
+> ```
+> This keeps tests self-contained (no `dotenv`, no `.env.test.local`).
 
 - [ ] **Step 6: Run full suite, typecheck, build**
 
@@ -903,7 +903,7 @@ Expected: FAIL (modules missing).
 
 ```ts
 import "server-only";
-import { and, desc, eq, isNull, or } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { users } from "@/lib/db/schema";
 import type { Db } from "@/lib/db";
@@ -1488,21 +1488,21 @@ describe("learnerService", () => {
   afterEach(async () => { await dropTestDb(db); });
 
   it("applies an SRS result and returns the word", async () => {
-    const w = await applyWordResult(db, uid, "word_1", "correct");
-    expect(w.id).toBe("word_1");
+    const w = await applyWordResult(db, uid, "halo", "correct");
+    expect(w.id).toBe("halo");
     expect(w.streak).toBe(1);
     expect(w.nextReview).not.toBeNull();
   });
   it("touch records an exposure", async () => {
-    const w = await touchWordRow(db, uid, "word_2");
+    const w = await touchWordRow(db, uid, "hai");
     expect(w.exposures).toBe(1);
-    const w2 = await touchWordRow(db, uid, "word_2");
+    const w2 = await touchWordRow(db, uid, "hai");
     expect(w2.exposures).toBe(2);
   });
   it("sets lesson progress", async () => {
-    await setLessonProgress(db, uid, "lesson_1", "complete");
+    await setLessonProgress(db, uid, "hello", "complete");
     const { loadLearnerState } = await import("@/lib/repo/learner");
-    expect((await loadLearnerState(db, uid)).lessons["lesson_1"].status).toBe("complete");
+    expect((await loadLearnerState(db, uid)).lessons["hello"].status).toBe("complete");
   });
   it("updates profile fields", async () => {
     await updateProfile(db, uid, { aiTutorOn: true, currentDifficulty: 3 });
@@ -1514,7 +1514,7 @@ describe("learnerService", () => {
 });
 ```
 
-> `word_1`, `word_2`, `lesson_1` must exist in `WORD_BANK`/`LESSONS` or be treated as unknown words. Check `src/lib/data/words.ts` for real ids; if none match, use `scheduler.recordResult` on a synthetic word via `emptyWord`-style construction and update the assertions accordingly.
+> Real word ids come from `src/lib/data/words.ts` (e.g. `halo`, `hai`, `tidak`); real lesson ids from `src/lib/data/lessons.ts` (e.g. `hello`, `numbers`, `food`). Use real ids in service tests so `loadLearnerState` merges the bank entry.
 
 - [ ] **Step 2: Run tests to verify they fail**
 
@@ -1609,9 +1609,13 @@ export async function upsertConversationRow(db: Db, userId: string, c: Conversat
 }
 
 export async function resetLearnerState(db: Db, userId: string): Promise<void> {
-  for (const table of [profiles, learnerWords, learnerLessons, learnerGrammar, conversations, attempts, learningSessions]) {
-    await db.delete(table).where("userId" in table ? eq(table.userId as never, userId as never) : eq((table as any).userId, userId));
-  }
+  await db.delete(profiles).where(eq(profiles.userId, userId));
+  await db.delete(learnerWords).where(eq(learnerWords.userId, userId));
+  await db.delete(learnerLessons).where(eq(learnerLessons.userId, userId));
+  await db.delete(learnerGrammar).where(eq(learnerGrammar.userId, userId));
+  await db.delete(conversations).where(eq(conversations.userId, userId));
+  await db.delete(attempts).where(eq(attempts.userId, userId));
+  await db.delete(learningSessions).where(eq(learningSessions.userId, userId));
 }
 
 export async function loadLearnerState(db: Db, userId: string): Promise<LearnerState> {
@@ -1727,10 +1731,9 @@ export async function updateProfile(db: Db, userId: string, partial: Partial<Lea
 export async function buildTutorContext(db: Db, userId: string): Promise<LearnerContext> {
   const s = await loadLearnerState(db, userId);
   return {
-    profile: s.profile,
+    level: s.profile.level,
+    translationMode: s.profile.translationMode,
     knownWords: Object.values(s.words).map((w) => w.indonesian).filter(Boolean).slice(-60),
-    recentLessons: Object.values(s.lessons).sort((a, b) => (a.completedAt ?? 0) - (b.completedAt ?? 0)).map((l) => l.lessonId),
-    recentConversations: s.conversations.slice(-5),
   };
 }
 ```
@@ -1781,9 +1784,9 @@ describe("learner API behavior", () => {
   afterEach(async () => { await dropTestDb(db); });
 
   it("persists a full learning session sequence", async () => {
-    const w = await applyWordResult(db, uid, "word_1", "correct");
-    await touchWordRow(db, uid, "word_2");
-    await setLessonProgress(db, uid, "lesson_1", "complete");
+    const w = await applyWordResult(db, uid, "halo", "correct");
+    await touchWordRow(db, uid, "hai");
+    await setLessonProgress(db, uid, "hello", "complete");
     await appendAttempt(db, uid, { id: "a1", ts: Date.now(), kind: "lesson", prompt: "p", learnerAnswer: "x", expected: "y", correct: true, wordIds: [w.id] });
     await appendSession(db, uid, { id: "s1", ts: Date.now(), durationMin: 3, wordsReviewed: 2, newWords: 2, recallRate: 1 });
     await upsertConversation(db, uid, { id: "c1", startedAt: Date.now(), messages: [{ id: "m1", kind: "tutor", content: "halo", timestamp: Date.now() }] });
@@ -1791,7 +1794,7 @@ describe("learner API behavior", () => {
 
     const s = await loadLearnerState(db, uid);
     expect(Object.keys(s.words).length).toBe(2);
-    expect(s.lessons["lesson_1"].status).toBe("complete");
+    expect(s.lessons["hello"].status).toBe("complete");
     expect(s.attempts).toHaveLength(1);
     expect(s.sessions).toHaveLength(1);
     expect(s.conversations[0].id).toBe("c1");
@@ -2364,10 +2367,11 @@ describe("tutor context", () => {
   afterEach(async () => { await dropTestDb(db); });
 
   it("builds context from the user's own data", async () => {
-    await applyWordResult(db, uid, "word_1", "correct");
+    await applyWordResult(db, uid, "halo", "correct");
     const ctx = await buildTutorContext(db, uid);
+    expect(typeof ctx.level).toBe("number");
     expect(Array.isArray(ctx.knownWords)).toBe(true);
-    expect(ctx.profile).toBeTruthy();
+    expect(typeof ctx.translationMode).toBe("string");
   });
 });
 ```
