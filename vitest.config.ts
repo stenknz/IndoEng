@@ -9,5 +9,5 @@ export default defineConfig({
     },
   },
   esbuild: { jsx: "automatic" },
-  test: { environment: "node", include: ["tests/**/*.test.{ts,tsx}"] },
+  test: { environment: "node", include: ["tests/**/*.test.{ts,tsx}"], setupFiles: ["tests/setup.ts"] },
 });
