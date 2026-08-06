@@ -280,18 +280,16 @@ Note: booleans/numbers that can be `"partial"` or floats are stored as `text`/`b
 
 ```ts
 import { defineConfig } from "drizzle-kit";
-import { loadConfig } from "@/lib/config";
 
-const cfg = loadConfig();
 export default defineConfig({
   schema: "./src/lib/db/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
-  dbCredentials: { url: cfg.databaseUrl },
+  dbCredentials: { url: process.env.DATABASE_URL ?? "" },
 });
 ```
 
-Note: `loadConfig` throws without `DATABASE_URL`; that is intentional — `drizzle-kit` is only run by the developer/CI with env set. Do not make this file `server-only`.
+> This file must NOT import from `@/lib/config` — `config.ts` is `server-only`, which throws outside a React server context, breaking `drizzle-kit`. `DATABASE_URL` is read directly from the process env. `drizzle-kit generate` runs offline (no DB needed) but requires `DATABASE_URL` set (any value) so the config parses.
 
 - [ ] **Step 7: Write `src/lib/db/index.ts`**
 
