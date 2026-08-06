@@ -9,6 +9,7 @@ import { signAccessToken, generateRefreshToken } from "@/lib/auth/jwt";
 import { hashToken } from "@/lib/auth/session";
 import { loadConfig } from "@/lib/config";
 import { createUser, findUserByEmail, findUserById, updateUserPassword } from "@/lib/repo/users";
+import { createProfileIfMissing } from "@/lib/repo/learner";
 import { createRefreshTokenRow, findRefreshTokenRow, rotateRefreshTokenRow, revokeRefreshTokenRow, revokeAllUserTokens } from "@/lib/repo/authTokens";
 import { registerSchema, loginSchema, changePasswordSchema } from "@/lib/validation/schemas";
 import type { z } from "zod";
@@ -51,8 +52,7 @@ export async function register(db: Db, input: { email: string; name: string; pas
   const parsed = parseOr400(registerSchema, input);
   if (await findUserByEmail(db, parsed.email)) throw new HttpError(409, "Email already registered");
   const user = await createUser(db, { email: parsed.email, name: parsed.name, passwordHash: await hashPassword(parsed.password) });
-  // Inline profile creation until Task 6 ships createProfileIfMissing in @/lib/repo/learner.
-  await db.insert(profiles).values({ userId: user.id });
+  await createProfileIfMissing(db, user.id);
   return issueSession(db, user, false, {});
 }
 
