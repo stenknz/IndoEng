@@ -16,6 +16,7 @@ export async function signAccessToken(payload: { userId: string; role: string })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${ACCESS_TTL_SECONDS}s`)
+    .setJti(randomBytes(16).toString("hex"))
     .sign(secret());
 }
 
