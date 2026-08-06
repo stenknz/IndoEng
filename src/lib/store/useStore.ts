@@ -3,29 +3,41 @@ import type {
   Conversation,
   LearningSession,
   LessonProgress,
+  LearnerState,
   PracticeAttempt,
   VocabularyWord,
 } from "@/lib/types";
-import { createInitialState, localStore } from "@/lib/store/localStore";
-import type { Store } from "@/lib/store/Store";
+import { createInitialState } from "@/lib/store/localStore";
 import { scheduler } from "@/lib/srs/scheduler";
 import { WORD_BANK } from "@/lib/data/words";
+import {
+  loadStateFromServer,
+  renameUserOnServer,
+  resetStateOnServer,
+  saveAttempt,
+  saveConversation,
+  saveLessonProgress,
+  saveProfile,
+  saveSession,
+  saveWordResult,
+  touchWordOnServer,
+} from "@/lib/api/actions";
 
 export type WordResult = "correct" | "partial" | "wrong";
 
 interface TutorState {
-  state: ReturnType<typeof localStore.getState>;
+  state: LearnerState;
   hydrated: boolean;
-  hydrate: () => void;
+  hydrate: () => Promise<void>;
   setUser: (name: string) => void;
-  updateProfile: (partial: Partial<TutorState["state"]["profile"]>) => void;
+  updateProfile: (partial: Partial<LearnerState["profile"]>) => void;
   recordAttempt: (a: PracticeAttempt) => void;
   saveConversation: (c: Conversation) => void;
   addSession: (s: LearningSession) => void;
   setLessonProgress: (id: string, status: LessonProgress["status"]) => void;
   bumpWord: (id: string, result: WordResult) => void;
   touchWord: (id: string) => void;
-  resetAll: () => void;
+  resetAll: () => Promise<void>;
 }
 
 function emptyWord(id: string): VocabularyWord {
@@ -54,15 +66,15 @@ export const useStore = create<TutorState>((set, get) => ({
   state: createInitialState("Kawan"),
   hydrated: false,
 
-  hydrate: () => {
-    if (typeof window === "undefined") return;
-    set({ state: localStore.getState(), hydrated: true });
+  hydrate: async () => {
+    const s = await loadStateFromServer();
+    set({ state: s, hydrated: true });
   },
 
   setUser: (name) => {
     const state = { ...get().state, user: { ...get().state.user, name } };
-    localStore.setState(state);
     set({ state });
+    void renameUserOnServer(name).catch(() => {});
   },
 
   updateProfile: (partial) => {
@@ -70,40 +82,43 @@ export const useStore = create<TutorState>((set, get) => ({
       ...get().state,
       profile: { ...get().state.profile, ...partial },
     };
-    localStore.setState(state);
     set({ state });
+    void saveProfile(partial).catch(() => {});
   },
 
   recordAttempt: (a) => {
+    const withId: PracticeAttempt = a.id ? a : { ...a, id: crypto.randomUUID() };
     const profile = {
       ...get().state.profile,
       consecutiveCorrect:
-        a.correct === true ? get().state.profile.consecutiveCorrect + 1 : 0,
-      lastAnswerAccuracy: a.correct === true ? 1 : 0,
+        withId.correct === true ? get().state.profile.consecutiveCorrect + 1 : 0,
+      lastAnswerAccuracy: withId.correct === true ? 1 : 0,
     };
     const state = {
       ...get().state,
       profile,
-      attempts: [...get().state.attempts, a],
+      attempts: [...get().state.attempts, withId],
     };
-    localStore.setState(state);
     set({ state });
+    void saveAttempt(withId).catch(() => {});
   },
 
   saveConversation: (c) => {
+    const withId: Conversation = c.id ? c : { ...c, id: crypto.randomUUID() };
     const conversations = [
-      ...get().state.conversations.filter((x) => x.id !== c.id),
-      c,
+      ...get().state.conversations.filter((x) => x.id !== withId.id),
+      withId,
     ];
     const state = { ...get().state, conversations };
-    localStore.setState(state);
     set({ state });
+    void saveConversation(withId).catch(() => {});
   },
 
   addSession: (s) => {
-    const state = { ...get().state, sessions: [...get().state.sessions, s] };
-    localStore.setState(state);
+    const withId: LearningSession = s.id ? s : { ...s, id: crypto.randomUUID() };
+    const state = { ...get().state, sessions: [...get().state.sessions, withId] };
     set({ state });
+    void saveSession(withId).catch(() => {});
   },
 
   setLessonProgress: (id, status) => {
@@ -118,12 +133,12 @@ export const useStore = create<TutorState>((set, get) => ({
       },
     };
     const state = { ...get().state, lessons };
-    localStore.setState(state);
     set({ state });
+    void saveLessonProgress(id, status).catch(() => {});
   },
 
   bumpWord: (id, result) => {
-    const word = scheduler.recordResult(get().state.words[id] ?? emptyWord(id), result);
+    const next = scheduler.recordResult(get().state.words[id] ?? emptyWord(id), result);
     const profile =
       result === "wrong"
         ? {
@@ -134,10 +149,16 @@ export const useStore = create<TutorState>((set, get) => ({
     const state = {
       ...get().state,
       profile,
-      words: { ...get().state.words, [id]: word },
+      words: { ...get().state.words, [id]: next },
     };
-    localStore.setState(state);
     set({ state });
+    void saveWordResult(id, result)
+      .then((server) => {
+        if (server.streak !== next.streak) {
+          set((s) => ({ state: { ...s.state, words: { ...s.state.words, [id]: server } } }));
+        }
+      })
+      .catch(() => {});
   },
 
   touchWord: (id) => {
@@ -165,13 +186,17 @@ export const useStore = create<TutorState>((set, get) => ({
       ...get().state,
       words: { ...get().state.words, [id]: next },
     };
-    localStore.setState(state);
     set({ state });
+    void touchWordOnServer(id).catch(() => {});
   },
 
-  resetAll: () => {
-    const state = createInitialState(get().state.user.name);
-    localStore.setState(state);
-    set({ state });
+  resetAll: async () => {
+    set({ state: createInitialState(get().state.user.name) });
+    try {
+      await resetStateOnServer();
+      await get().hydrate();
+    } catch {
+      // Server unreachable or unauthenticated: the optimistic local reset stands.
+    }
   },
 }));
