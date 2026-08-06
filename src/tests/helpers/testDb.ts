@@ -5,6 +5,7 @@ import { newDb, replaceQueryArgs$ } from "pg-mem";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "@/lib/db/schema";
 import type { Db } from "@/lib/db";
+import { __setDbForTests } from "@/lib/db";
 
 export async function createTestDb(): Promise<Db> {
   const mem = newDb();
@@ -29,10 +30,12 @@ export async function createTestDb(): Promise<Db> {
     end: async () => {},
   };
   const db = drizzle(pool as never, { schema }) as unknown as Db;
+  __setDbForTests(db);
   return db;
 }
 
 export async function dropTestDb(_db: Db): Promise<void> {
+  __setDbForTests(null);
   return Promise.resolve();
 }
 
