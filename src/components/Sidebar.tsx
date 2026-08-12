@@ -75,6 +75,19 @@ export function Sidebar() {
             </span>
           </Link>
           <nav className="mt-2 flex gap-1 overflow-x-auto pb-1">{navItems}</nav>
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-ink/5 pt-2">
+            <p className="min-w-0 truncate text-xs font-medium text-muted">
+              Masuk sebagai{" "}
+              <span className="text-ink">{user?.name ?? "…"}</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="shrink-0 text-sm font-semibold text-red-600 transition hover:text-red-700"
+            >
+              Keluar
+            </button>
+          </div>
         </div>
       </div>
 

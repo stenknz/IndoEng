@@ -13,12 +13,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const init = useAuth((s) => s.init);
 
   useEffect(() => {
-    void init().then(() => {
-      if (useAuth.getState().status === "authed") {
-        void useStore.getState().hydrate().catch(() => {});
-      }
-    });
+    void init();
   }, [init]);
+
+  useEffect(() => {
+    if (status === "authed") {
+      void useStore.getState().hydrate().catch(() => {});
+    }
+  }, [status]);
 
   useEffect(() => {
     if (status === "guest") {

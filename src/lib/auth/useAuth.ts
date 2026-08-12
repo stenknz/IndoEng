@@ -26,7 +26,7 @@ export const useAuth = create<AuthState>((set) => ({
   user: null,
   init: async () => {
     try {
-      const user = await apiFetch<PublicUser>("/api/auth/me");
+      const { user } = await apiFetch<{ user: PublicUser }>("/api/auth/me");
       set({ status: "authed", user });
     } catch {
       set({ status: "guest", user: null });
@@ -55,7 +55,7 @@ export const useAuth = create<AuthState>((set) => ({
     set({ status: "guest", user: null });
   },
   refreshUser: async () => {
-    const user = await apiFetch<PublicUser>("/api/auth/me");
+    const { user } = await apiFetch<{ user: PublicUser }>("/api/auth/me");
     set({ user });
   },
 }));
