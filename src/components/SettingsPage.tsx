@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useStore } from "@/lib/store/useStore";
+import { useAuth } from "@/lib/auth/useAuth";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Modal } from "@/components/Modal";
@@ -54,6 +56,7 @@ function Switch({
 
 export function SettingsPage() {
   const state = useStore((s) => s.state);
+  const user = useAuth((s) => s.user);
   const [saved, setSaved] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
@@ -106,6 +109,28 @@ export function SettingsPage() {
         </h1>
         <p className="mt-1 text-sm text-muted">Tune how Kak learns with you.</p>
       </header>
+
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
+          Akun
+        </h2>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-ink">
+              {user?.name ?? "…"}
+            </p>
+            <p className="truncate text-sm text-muted">
+              {user?.email ?? "…"} · {user?.role === "admin" ? "Admin" : "Student"}
+            </p>
+          </div>
+          <Link
+            href="/profile"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-ink/10 bg-white px-3.5 py-2 text-sm font-semibold text-canopy-700 transition select-none hover:bg-canopy-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-canopy-600/40"
+          >
+            Kelola akun
+          </Link>
+        </div>
+      </Card>
 
       <Card className="p-6">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
