@@ -5,7 +5,10 @@ import { clientIp } from "@/lib/auth/rateLimit";
 import { createRateLimiter } from "@/lib/auth/rateLimit";
 import { loadConfig } from "@/lib/config";
 
-const authLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
+const authLimiter = createRateLimiter({
+  windowMs: 60_000,
+  max: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 10),
+});
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -4,4 +4,7 @@ export async function register() {
   if (!validateConfig().ok) return; // no DB configured — build/dev without a DB must still work
   const { runMigrations } = await import("@/lib/db/migrate");
   await runMigrations();
+  const { seedAdminIfNeeded } = await import("@/lib/repo/users");
+  const { getDb } = await import("@/lib/db");
+  await seedAdminIfNeeded(getDb());
 }

@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kak
+      POSTGRES_PASSWORD: kak
+      POSTGRES_DB: kak
+    ports:
+      - "5432:5432"
+    volumes:
+      - kak_dev_pg:/var/lib/postgresql/data
+
+volumes:
+  kak_dev_pg:

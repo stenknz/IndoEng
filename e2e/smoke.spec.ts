@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { makeEmail, register } from "./helpers";
 
 test("app starts and dashboard renders", async ({ page }) => {
-  await page.goto("/");
+  await register(page, makeEmail("smoke-start"), "password123", "Smoke Start");
   await expect(page).toHaveTitle(/Indonesian/);
   await expect(page.getByText("Today's Learning")).toBeVisible();
 });
@@ -9,21 +10,21 @@ test("app starts and dashboard renders", async ({ page }) => {
 test("learner completes lesson 1, unlocks the dashboard and conversation", async ({
   page,
 }) => {
-  // 1. Dashboard renders the first-run hero.
-  await page.goto("/");
+  // 0. A fresh user sees the first-run hero.
+  await register(page, makeEmail("smoke-lesson"), "password123", "Smoke Lesson");
   await expect(page.getByText("Halo! Selamat datang")).toBeVisible();
 
-  // 2. Lesson page renders with the lesson title and progress.
+  // 1. Lesson page renders with the lesson title and progress.
   await page.goto("/lesson/hello");
   await expect(page.getByRole("heading", { name: /Hello/i })).toBeVisible();
   await expect(page.getByText(/Langkah 1 dari 6/)).toBeVisible();
 
-  // 3. Advance warmup -> newwords -> conversation.
+  // 2. Advance warmup -> newwords -> conversation.
   await page.getByRole("button", { name: /Let's begin/i }).click();
   await page.getByRole("button", { name: /Lanjut/i }).click();
   await page.getByRole("button", { name: /Sekarang saya coba/i }).click();
 
-  // 4. Practice: answer every item correctly (reading the prompts on screen).
+  // 3. Practice: answer every item correctly (reading the prompts on screen).
   const practiceInput = page.getByPlaceholder(/Tulis dalam bahasa Indonesia/);
 
   // Item 1: "Selamat pagi!"
@@ -46,7 +47,7 @@ test("learner completes lesson 1, unlocks the dashboard and conversation", async
   await practiceInput.press("Enter");
   await expect(page.getByText(/Bagus/i).first()).toBeVisible();
 
-  // 5. Recall: answer every item correctly (with a hyphen this time).
+  // 4. Recall: answer every item correctly (with a hyphen this time).
   const recallInput = page.getByPlaceholder(/Ketik jawaban/);
 
   await expect(page.getByText("hello", { exact: true })).toBeVisible();
@@ -63,25 +64,25 @@ test("learner completes lesson 1, unlocks the dashboard and conversation", async
   await recallInput.fill("sama-sama");
   await recallInput.press("Enter");
 
-  // 6. Review step: finish the lesson.
+  // 5. Review step: finish the lesson.
   await expect(page.getByRole("button", { name: /Selesai/i })).toBeVisible();
   await page.getByRole("button", { name: /Selesai/i }).click();
 
-  // 7. Dashboard now shows Continue Learning -> lesson 2, not the first-run hero.
+  // 6. Dashboard now shows Continue Learning -> lesson 2, not the first-run hero.
   await expect(page.getByText("Continue Learning")).toBeVisible();
   await expect(page.getByText("Halo! Selamat datang")).not.toBeVisible();
   await expect(
     page.getByRole("link", { name: /Continue →/ }),
   ).toHaveAttribute("href", "/lesson/my-name");
 
-  // 8. Conversation gate is gone — the chat input is available.
+  // 7. Conversation gate is gone — the chat input is available.
   await page.goto("/conversation");
   await expect(page.getByText("Ngobrol dengan Kak")).toBeVisible();
   await expect(
     page.getByPlaceholder(/Tulis dalam bahasa Indonesia/),
   ).toBeVisible();
 
-  // 9. Vocabulary page shows the bumped word as learned, and it persists.
+  // 8. Vocabulary page shows the bumped word as learned, and it persists.
   await page.goto("/vocabulary");
   const card = page.locator("article").filter({ hasText: "selamat pagi" });
   await expect(card.getByRole("heading", { name: "selamat pagi" })).toBeVisible();
