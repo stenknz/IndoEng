@@ -1,4 +1,3 @@
-import { metWordIds } from "@/lib/difficulty/learnerModel";
 import type { TutorContext, TutorResponse } from "@/lib/engine/provider";
 import type { TutorReply } from "@/lib/engine/openaiMessages";
 
@@ -18,11 +17,6 @@ export const openaiCompatibleProvider: AIProvider = {
         body: JSON.stringify({
           messages: ctx.messages.slice(-20),
           input: ctx.input ?? "",
-          context: {
-            level: ctx.state.profile.level,
-            translationMode: ctx.state.profile.translationMode,
-            knownWords: metWordIds(ctx.state.words),
-          },
         }),
       });
       if (!res.ok) return null;
