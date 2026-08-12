@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { randomUUID } from "crypto";
 import { createTestDb, dropTestDb, createTestUser } from "@/tests/helpers/testDb";
 import { loadLearnerState, upsertWordRow, upsertLessonRow, appendAttemptRow, appendSessionRow, upsertConversationRow, resetLearnerState, createProfileIfMissing } from "@/lib/repo/learner";
+import { createUser } from "@/lib/repo/users";
 import type { VocabularyWord, PracticeAttempt, LearningSession, Conversation } from "@/lib/types";
 
 describe("learner repo", () => {
@@ -38,5 +39,11 @@ describe("learner repo", () => {
     await resetLearnerState(db, uid);
     const s = await loadLearnerState(db, uid);
     expect(s.words).toEqual({});
+  });
+  it("hydrates the real user name and createdAt from the users table", async () => {
+    const u = await createUser(db, { email: "named@b.c", name: "Budi", passwordHash: "test-hash" });
+    const s = await loadLearnerState(db, u.id);
+    expect(s.user.name).toBe("Budi");
+    expect(s.user.createdAt).toBe(u.createdAt);
   });
 });

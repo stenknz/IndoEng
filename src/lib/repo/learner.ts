@@ -6,6 +6,7 @@ import type { Db } from "@/lib/db";
 import type { LearnerState, LearningProfile, VocabularyWord, LessonProgress, GrammarConcept, Conversation, PracticeAttempt, LearningSession } from "@/lib/types";
 import { createInitialState } from "@/lib/store/localStore";
 import { WORD_BANK } from "@/lib/data/words";
+import { findUserById } from "@/lib/repo/users";
 
 const toBool = (s: string | null) => s === "true";
 const toNum = (n: number | null) => n ?? 0;
@@ -125,6 +126,9 @@ export async function loadLearnerState(db: Db, userId: string): Promise<LearnerS
 
   const sessionRows = await db.select().from(learningSessions).where(eq(learningSessions.userId, userId));
   state.sessions = sessionRows.map((r) => ({ id: r.id, ts: r.ts, durationMin: toNum(r.durationMin), wordsReviewed: toNum(r.wordsReviewed), newWords: toNum(r.newWords), recallRate: Number(r.recallRate) }));
+
+  const user = await findUserById(db, userId);
+  if (user) state.user = { name: user.name, createdAt: user.createdAt };
 
   return state;
 }
