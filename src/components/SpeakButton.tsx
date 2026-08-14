@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { speakText } from "@/lib/audio/speech";
+import { useStore } from "@/lib/store/useStore";
 
 export function SpeakButton({
   text,
@@ -12,6 +13,7 @@ export function SpeakButton({
 }) {
   const [mounted, setMounted] = useState(false);
   const [hint, setHint] = useState(false);
+  const ttsVoice = useStore((s) => s.state.profile.ttsVoice);
 
   useEffect(() => setMounted(true), []);
 
@@ -22,7 +24,7 @@ export function SpeakButton({
       <button
         type="button"
         onClick={async () => {
-          const ok = await speakText(text);
+          const ok = await speakText(text, { voice: ttsVoice ?? undefined });
           if (!ok) setHint(true);
         }}
         aria-label={`Dengarkan ${text}`}

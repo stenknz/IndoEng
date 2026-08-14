@@ -314,8 +314,9 @@ export function SettingsPage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  if (selectedVoice)
-                    void speakText(selectedVoice, { voice: selectedVoice });
+                  void speakText("Halo, selamat pagi. Apa kabar?", {
+                    voice: selectedVoice,
+                  });
                 }}
               >
                 Coba
