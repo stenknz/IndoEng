@@ -14,7 +14,7 @@ Mission phases covered: 2 (Dockerfiles), 3 (compose stack), 12 (CI), 13 (CD), 15
 
 ## Scope decisions (confirmed with user)
 
-- GitHub + GitHub Actions; repo will be hosted on GitHub (remote not yet configured).
+- GitHub + GitHub Actions; repo will be hosted on GitHub (remote not yet configured). The `ghcr.io/<owner>` placeholders in this spec resolve to the user's GitHub username at implementation time.
 - NAS access via a **domain + reverse-proxy inside the stack** (Caddy); LAN-IP fallback documented for testing.
 - "Upgrades" = **pin Node 22 + exact dependency versions** only. No Next/React major upgrades, no audit fixes.
 - CI runs the **full gate**: lint + tsc + unit + build + audit (advisory) + Playwright e2e against a throwaway Postgres.
@@ -78,7 +78,7 @@ Trigger: push + pull_request. Deploy job only on `main` and only after verify+e2
 | Job | Runs on | Steps |
 |---|---|---|
 | `verify` | every push/PR | `npm ci` → `npm run lint` → `npx tsc --noEmit` → `npm test` → `npm audit` (advisory, non-blocking) → `npm run build` |
-| `e2e` | every push/PR | spin up throwaway Postgres + Piper via compose → `npm run test:e2e` → teardown |
+| `e2e` | every push/PR | reuse `docker-compose.dev.yml` (Postgres + Piper, same dev creds) via `docker compose up -d --build` → set CI env (DATABASE_URL etc. pointing at the compose Postgres, `PIPER_URL=http://localhost:5000`, `AUTH_RATE_LIMIT_MAX=1000`) → `npm run test:e2e` → teardown (`docker compose down -v`). No AirPlay conflict on Linux runners, so Piper uses host port 5000. |
 | `deploy` | `main` only | buildx build app + piper → push `ghcr.io` (`<sha>` + `main` tags) → `curl` Portainer webhook |
 
 ### GitHub secrets
