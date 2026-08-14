@@ -1,5 +1,12 @@
+export interface SpeechVoice {
+  id: string;
+  name: string;
+  language: string;
+}
+
 export interface SpeechProvider {
-  speak(text: string): boolean;
+  speak(text: string, opts?: { voice?: string; language?: string }): Promise<boolean>;
   supported: boolean;
-  voiceAvailable: boolean;
+  voices: SpeechVoice[];
+  activeVoice: string;
 }

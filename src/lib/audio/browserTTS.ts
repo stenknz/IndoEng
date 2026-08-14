@@ -15,12 +15,14 @@ if (hasSpeech) {
   window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
 }
 
-export const browserTTS: SpeechProvider = {
+export const browserTTS: SpeechProvider & { voiceAvailable: boolean } = {
   supported: hasSpeech,
+  voices: [],
+  activeVoice: "",
   get voiceAvailable(): boolean {
     return hasSpeech && Boolean(idVoice);
   },
-  speak(text: string): boolean {
+  async speak(text: string): Promise<boolean> {
     // Never read Indonesian with a non-Indonesian voice — that sounds wrong.
     if (!hasSpeech || !idVoice) return false;
     window.speechSynthesis.cancel();

@@ -22,8 +22,9 @@ export function SpeakButton({
       <button
         type="button"
         onClick={() => {
-          const ok = browserTTS.speak(text);
-          if (!ok) setHint(true);
+          void browserTTS.speak(text).then((ok) => {
+            if (!ok) setHint(true);
+          });
         }}
         aria-label={`Dengarkan ${text}`}
         title={
