@@ -7,7 +7,7 @@ import { loadConfig } from "@/lib/config";
 
 const authLimiter = createRateLimiter({
   windowMs: 60_000,
-  max: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 10),
+  max: loadConfig().authRateLimitMax,
 });
 
 export async function middleware(request: NextRequest) {

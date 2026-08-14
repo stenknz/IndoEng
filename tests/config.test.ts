@@ -14,6 +14,13 @@ describe("config", () => {
     const c = loadConfig(base);
     expect(c.databaseUrl).toBe(base.DATABASE_URL);
     expect(c.cookieSecure).toBe(false); // dev
+    expect(c.authRateLimitMax).toBe(10); // secure default
+  });
+  it("validates AUTH_RATE_LIMIT_MAX and rejects non-positive values", () => {
+    expect(loadConfig({ ...base, AUTH_RATE_LIMIT_MAX: "1000" }).authRateLimitMax).toBe(1000);
+    expect(() => loadConfig({ ...base, AUTH_RATE_LIMIT_MAX: "abc" })).toThrow();
+    expect(() => loadConfig({ ...base, AUTH_RATE_LIMIT_MAX: "0" })).toThrow();
+    expect(() => loadConfig({ ...base, AUTH_RATE_LIMIT_MAX: "-5" })).toThrow();
   });
   it("throws a precise error when DATABASE_URL is missing", () => {
     expect(() => loadConfig({ JWT_SECRET: base.JWT_SECRET })).toThrow(/DATABASE_URL/);

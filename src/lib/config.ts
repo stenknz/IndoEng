@@ -6,6 +6,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string({ error: "JWT_SECRET" }).min(32, "JWT_SECRET must be at least 32 characters"),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(8),
   REMEMBER_TTL_DAYS: z.coerce.number().int().positive().default(30),
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
   ADMIN_EMAIL: z.string().email().optional().or(z.literal("")),
   ADMIN_PASSWORD: z.string().min(8).optional().or(z.literal("")),
   SMTP_HOST: z.string().optional().or(z.literal("")),
@@ -27,6 +28,7 @@ export interface AppConfig {
   jwtSecret: string;
   sessionTtlHours: number;
   rememberTtlDays: number;
+  authRateLimitMax: number;
   adminEmail: string | null;
   adminPassword: string | null;
   smtp: { host: string | null; port: number; user: string | null; pass: string | null; from: string | null };
@@ -51,6 +53,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     jwtSecret: v.JWT_SECRET,
     sessionTtlHours: v.SESSION_TTL_HOURS,
     rememberTtlDays: v.REMEMBER_TTL_DAYS,
+    authRateLimitMax: v.AUTH_RATE_LIMIT_MAX,
     adminEmail: v.ADMIN_EMAIL || null,
     adminPassword: v.ADMIN_PASSWORD || null,
     smtp: {
