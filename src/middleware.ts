@@ -15,6 +15,11 @@ const tutorLimiter = createRateLimiter({
   max: loadConfig().tutorRateLimitMax,
 });
 
+const ttsLimiter = createRateLimiter({
+  windowMs: 60_000,
+  max: loadConfig().ttsRateLimitMax,
+});
+
 const isRateLimited = (pathname: string) =>
   pathname.startsWith("/api/auth/login") ||
   pathname.startsWith("/api/auth/register") ||
@@ -32,6 +37,13 @@ export async function middleware(request: NextRequest) {
     const ip = clientIp(request, loadConfig().trustProxy);
     const limiter = pathname.startsWith("/api/tutor") ? tutorLimiter : authLimiter;
     const r = limiter(ip);
+    if (!r.allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: { "retry-after": String(Math.ceil(r.retryAfterMs / 1000)) } });
+    }
+  }
+
+  if (pathname === "/api/tts" && request.method === "POST") {
+    const r = ttsLimiter(clientIp(request, loadConfig().trustProxy));
     if (!r.allowed) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: { "retry-after": String(Math.ceil(r.retryAfterMs / 1000)) } });
     }
