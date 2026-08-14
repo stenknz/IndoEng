@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, rmSync, readdirSync } from "fs";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 import { cacheKey, getPiperVoices, synthesize, ttsInfo } from "@/lib/services/ttsService";
+
+const RIFF_WAV = [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00];
 
 const tmp = () => join(mkdtempSync(join(tmpdir(), "tts-")), "cache");
 let dir: string;
@@ -32,14 +35,38 @@ describe("synthesize", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     // prime the cache by synthesizing once
-    fetchMock.mockResolvedValue(new Response(new Uint8Array([1, 2, 3]), { status: 200, headers: { "content-type": "audio/wav" } }));
+    fetchMock.mockResolvedValue(new Response(new Uint8Array(RIFF_WAV), { status: 200, headers: { "content-type": "audio/wav" } }));
     const a1 = await synthesize("halo", "v1");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     fetchMock.mockClear();
     const a2 = await synthesize("halo", "v1");
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(Array.from(a2)).toEqual([1, 2, 3]);
+    expect(Array.from(a2)).toEqual(RIFF_WAV);
     expect(a1).toBeInstanceOf(Uint8Array);
+  });
+
+  it("writes cache atomically via tmp + rename (no .tmp left behind)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(new Uint8Array(RIFF_WAV), { status: 200, headers: { "content-type": "audio/wav" } })));
+    await synthesize("halo", "v1");
+    expect(readdirSync(dir)).toEqual([`${cacheKey("halo", "v1")}.wav`]);
+  });
+
+  it("treats a corrupt cached file as a miss and re-synthesizes", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(new Uint8Array(RIFF_WAV), { status: 200, headers: { "content-type": "audio/wav" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const key = cacheKey("halo", "v1");
+    const file = join(dir, `${key}.wav`);
+    await mkdir(dir, { recursive: true });
+    await writeFile(file, Buffer.from("GARBAGE_NOT_A_WAV"));
+    const audio = await synthesize("halo", "v1");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(Array.from(audio)).toEqual(RIFF_WAV);
+    const reread = await readFile(file);
+    expect(reread.subarray(0, 4).toString("latin1")).toBe("RIFF");
+    // the repaired entry is now a cache hit
+    fetchMock.mockClear();
+    await synthesize("halo", "v1");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("throws HttpError(502) when the provider fails", async () => {

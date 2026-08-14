@@ -19,6 +19,7 @@ const bodySchema = z.object({
   currentDifficulty: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
   lastAnswerAccuracy: z.number().min(0).max(1),
   consecutiveCorrect: z.number().int().min(0),
+  ttsVoice: z.string().max(100).nullable().optional(),
 }).partial();
 
 export async function PATCH(request: Request) {

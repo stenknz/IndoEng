@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "crypto";
-import { mkdir, readFile, writeFile } from "fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { loadConfig } from "@/lib/config";
 import { HttpError } from "@/lib/auth/requireUser";
@@ -79,7 +79,11 @@ export async function synthesize(text: string, voice?: string): Promise<Uint8Arr
   const file = join(cfg.tts.cacheDir, `${key}.wav`);
   try {
     const cached = await readFile(file);
-    return new Uint8Array(cached);
+    if (cached.length >= 4 && cached[0] === 0x52 && cached[1] === 0x49 && cached[2] === 0x46 && cached[3] === 0x46) {
+      return new Uint8Array(cached);
+    }
+    // Corrupt/truncated cache entry — remove it and re-synthesize below.
+    await rm(file, { force: true });
   } catch {
     // cache miss — synthesize below
   }
@@ -98,7 +102,11 @@ export async function synthesize(text: string, voice?: string): Promise<Uint8Arr
   if (!res.ok) throw new HttpError(502, "TTS provider error");
   const buf = Buffer.from(await res.arrayBuffer());
   await mkdir(cfg.tts.cacheDir, { recursive: true });
-  await writeFile(file, buf);
+  // Write to a temp file and atomically rename so a crash mid-write can never
+  // leave a truncated WAV that would then be served from cache forever.
+  const tmp = `${file}.tmp`;
+  await writeFile(tmp, buf);
+  await rename(tmp, file);
   return new Uint8Array(buf);
 }
 
