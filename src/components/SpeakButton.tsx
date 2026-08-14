@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { browserTTS } from "@/lib/audio/browserTTS";
+import { speakText } from "@/lib/audio/speech";
 
 export function SpeakButton({
   text,
@@ -15,31 +15,25 @@ export function SpeakButton({
 
   useEffect(() => setMounted(true), []);
 
-  if (!mounted || !browserTTS.supported) return null;
+  if (!mounted) return null;
 
   return (
     <span className="inline-flex items-center gap-2">
       <button
         type="button"
-        onClick={() => {
-          void browserTTS.speak(text).then((ok) => {
-            if (!ok) setHint(true);
-          });
+        onClick={async () => {
+          const ok = await speakText(text);
+          if (!ok) setHint(true);
         }}
         aria-label={`Dengarkan ${text}`}
-        title={
-          browserTTS.voiceAvailable
-            ? "Putar pelafalan"
-            : "Belum ada suara bahasa Indonesia di perangkat ini"
-        }
+        title="Putar pelafalan"
         className={`rounded-full bg-canopy-50 p-2.5 text-base text-canopy-700 transition hover:bg-canopy-100 ${className}`}
       >
         🔊
       </button>
       {hint && (
         <span className="text-xs text-amber-600">
-          Pasang suara Indonesia (System Settings → Accessibility → Spoken
-          Content) lalu muat ulang.
+          Tidak dapat memutar suara. Coba nyalakan Piper (server) di Pengaturan.
         </span>
       )}
     </span>
