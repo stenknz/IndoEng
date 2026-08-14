@@ -918,9 +918,9 @@ git commit -m "feat(settings): voice provider status and picker (Suara card)"
 
 - [ ] **Step 1: Update `.env.local` + `.env.example`**
 
-`.env.local` (gitignored) — append:
+`.env.local` (gitignored) — append. IMPORTANT: the dev app runs on the HOST (not in the compose network), and macOS AirPlay owns host port 5000, so the piper service maps `5001:5000` — use `localhost:5001`:
 ```
-PIPER_URL=http://localhost:5000
+PIPER_URL=http://localhost:5001
 TTS_CACHE_DIR=/tmp/kak-tts-cache
 ```
 `.env.example` — add a TTS section (all safe defaults, commented):
