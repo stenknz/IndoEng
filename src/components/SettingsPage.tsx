@@ -8,6 +8,7 @@ import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Modal } from "@/components/Modal";
 import { useToastStore } from "@/lib/toast";
+import { speakText } from "@/lib/audio/speech";
 import type { TranslationMode } from "@/lib/types";
 
 const MODES: { value: TranslationMode; label: string; description: string }[] = [
@@ -60,6 +61,12 @@ export function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+  const [tts, setTts] = useState<{
+    provider: string;
+    configured: boolean;
+    voices: { id: string; name: string; language: string }[];
+    defaultVoice: string;
+  } | null>(null);
   const [name, setName] = useState(state.user.name);
   const nameTimerRef = useRef<number | null>(null);
   const pushToast = useToastStore((s) => s.push);
@@ -92,6 +99,24 @@ export function SettingsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/tts/info", {
+      headers: { "x-kak-request": "1" },
+      credentials: "same-origin",
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) setTts(d);
+      })
+      .catch(() => {
+        if (!cancelled) setTts(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleNameChange = (next: string) => {
     setName(next); // live local input; the server write is debounced
     if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
@@ -109,6 +134,8 @@ export function SettingsPage() {
   const handleModeChange = (mode: TranslationMode) => {
     useStore.getState().updateProfile({ translationMode: mode });
   };
+
+  const selectedVoice = state.profile.ttsVoice ?? tts?.defaultVoice;
 
   const handlePronunciationChange = (on: boolean) => {
     useStore.getState().updateProfile({ pronunciationOn: on });
@@ -247,6 +274,60 @@ export function SettingsPage() {
             onChange={handlePronunciationChange}
           />
         </div>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
+          Suara
+        </h2>
+        {tts === null ? (
+          <p className="mt-3 text-sm text-muted">Memeriksa suara…</p>
+        ) : tts.provider === "piper" && tts.configured ? (
+          <>
+            <p className="mt-3 text-sm font-medium text-canopy-700">
+              Suara Piper (server) ✓
+            </p>
+            <div className="mt-3 flex flex-wrap items-end gap-3">
+              <label className="block">
+                <span className="block text-sm font-medium text-ink">Suara</span>
+                <select
+                  aria-label="Suara"
+                  value={selectedVoice ?? ""}
+                  onChange={(e) =>
+                    useStore
+                      .getState()
+                      .updateProfile({ ttsVoice: e.target.value })
+                  }
+                  className="mt-1 rounded-xl border border-ink/10 bg-white px-4 py-2.5 text-sm text-ink outline-none transition focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"
+                >
+                  {state.profile.ttsVoice === null && tts.defaultVoice && (
+                    <option value={tts.defaultVoice}>Default</option>
+                  )}
+                  {tts.voices.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  if (selectedVoice)
+                    void speakText(selectedVoice, { voice: selectedVoice });
+                }}
+              >
+                Coba
+              </Button>
+            </div>
+          </>
+        ) : (
+          <p className="mt-3 rounded-xl bg-marigold-50 px-4 py-2.5 text-sm text-marigold-700">
+            Suara perangkat (browser) — untuk suara terbaik aktifkan Piper
+            (server).
+          </p>
+        )}
       </Card>
 
       <Card className="border-red-200 p-6">
