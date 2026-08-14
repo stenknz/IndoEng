@@ -10,5 +10,15 @@ services:
     volumes:
       - kak_dev_pg:/var/lib/postgresql/data
 
+  piper:
+    build: ./piper
+    environment:
+      PIPER_VOICE: id_ID-news_tts-medium
+    ports:
+      - "5001:5000"
+    volumes:
+      - piper_data:/data
+
 volumes:
   kak_dev_pg:
+  piper_data:

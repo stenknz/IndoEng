@@ -36,12 +36,31 @@ const toVoice = (raw: unknown, fallback: string): TtsVoiceInfo => {
 export async function getPiperVoices(): Promise<TtsVoiceInfo[]> {
   const cfg = loadConfig();
   if (cfg.tts.provider !== "piper") return [];
+  const defaultOnly = (): TtsVoiceInfo[] => [
+    { id: cfg.tts.defaultVoice, name: cfg.tts.defaultVoice, language: "id" },
+  ];
   try {
     const res = await fetch(`${cfg.tts.piperUrl}/voices`, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return [];
+    if (!res.ok) return defaultOnly();
     const data = (await res.json()) as unknown;
+    // piper-tts http_server returns a dict: { "<voiceId>": { <config> }, ... }
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      const dict = data as Record<string, unknown>;
+      const entries = Object.entries(dict).filter(
+        ([id, v]) => id && v && typeof v === "object",
+      );
+      if (entries.length === 0) return defaultOnly();
+      const voices: TtsVoiceInfo[] = entries.map(([id, v]) =>
+        toVoice({ id, name: id, language: (v as { language?: { code?: string } })?.language?.code ?? "id" }, cfg.tts.defaultVoice),
+      );
+      // Ensure the configured default is always present.
+      if (!voices.some((v) => v.id === cfg.tts.defaultVoice)) {
+        voices.unshift({ id: cfg.tts.defaultVoice, name: cfg.tts.defaultVoice, language: "id" });
+      }
+      return voices;
+    }
     const list = Array.isArray(data) ? data : (data as { voices?: unknown[] })?.voices ?? [];
-    if (!Array.isArray(list)) return [];
+    if (!Array.isArray(list) || list.length === 0) return defaultOnly();
     const voices = list.map((v) => toVoice(v, cfg.tts.defaultVoice));
     // Ensure the configured default is always present.
     if (!voices.some((v) => v.id === cfg.tts.defaultVoice)) {
@@ -49,7 +68,7 @@ export async function getPiperVoices(): Promise<TtsVoiceInfo[]> {
     }
     return voices;
   } catch {
-    return [{ id: cfg.tts.defaultVoice, name: cfg.tts.defaultVoice, language: "id" }];
+    return defaultOnly();
   }
 }
 

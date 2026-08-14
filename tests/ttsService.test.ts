@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, rmSync, readdirSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { cacheKey, synthesize, ttsInfo } from "@/lib/services/ttsService";
+import { cacheKey, getPiperVoices, synthesize, ttsInfo } from "@/lib/services/ttsService";
 
 const tmp = () => join(mkdtempSync(join(tmpdir(), "tts-")), "cache");
 let dir: string;
@@ -45,6 +45,44 @@ describe("synthesize", () => {
   it("throws HttpError(502) when the provider fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("boom", { status: 500 })));
     await expect(synthesize("halo", "v1")).rejects.toMatchObject({ status: 502 });
+  });
+});
+
+describe("getPiperVoices", () => {
+  it("normalizes the piper-tts dict shape {voiceId: config}", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ "id_ID-news_tts-medium": { language: { code: "id_ID" } } }), { status: 200 }),
+      ),
+    );
+    const voices = await getPiperVoices();
+    expect(voices).toEqual([
+      { id: "id_ID-news_tts-medium", name: "id_ID-news_tts-medium", language: "id_ID" },
+    ]);
+  });
+
+  it("falls back to default-only when /voices is unreachable", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));
+    const voices = await getPiperVoices();
+    expect(voices).toEqual([{ id: "id_ID-news_tts-medium", name: "id_ID-news_tts-medium", language: "id" }]);
+  });
+
+  it("falls back to default-only when /voices is empty", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
+    const voices = await getPiperVoices();
+    expect(voices).toEqual([{ id: "id_ID-news_tts-medium", name: "id_ID-news_tts-medium", language: "id" }]);
+  });
+
+  it("keeps the configured default when the dict lacks it", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ "en_US-lessac-medium": { language: { code: "en_US" } } }), { status: 200 })),
+    );
+    const voices = await getPiperVoices();
+    expect(voices).toHaveLength(2);
+    expect(voices[0].id).toBe("id_ID-news_tts-medium");
+    expect(voices[1]).toEqual({ id: "en_US-lessac-medium", name: "en_US-lessac-medium", language: "en_US" });
   });
 });
 
