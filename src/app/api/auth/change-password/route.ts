@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    console.error("[api/auth/change-password]", e);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

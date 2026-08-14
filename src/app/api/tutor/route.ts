@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     let body: { messages: ConversationMessage[]; input: string };
     try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
-    if (!Array.isArray(body.messages) || typeof body.input !== "string") {
+    if (!body || !Array.isArray(body.messages) || typeof body.input !== "string") {
       return NextResponse.json({ error: "Missing messages or input" }, { status: 400 });
     }
 

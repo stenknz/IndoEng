@@ -8,5 +8,9 @@ export async function GET(request: Request) {
     await requireAdmin(request);
     const users = await listUsersPublic(getDb());
     return NextResponse.json(users);
-  } catch (e) { if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status }); return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
+  } catch (e) {
+    if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    console.error("[api/admin/users]", e);
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 }

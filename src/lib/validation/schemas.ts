@@ -29,3 +29,5 @@ export const changePasswordSchema = z.object({
 });
 
 export const renameSchema = z.object({ name: nameSchema });
+
+export const adminDisableSchema = z.object({ disabled: z.boolean() });

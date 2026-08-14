@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store/useStore";
 import { useAuth } from "@/lib/auth/useAuth";
@@ -60,7 +60,21 @@ export function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+  const [name, setName] = useState(state.user.name);
+  const nameTimerRef = useRef<number | null>(null);
   const pushToast = useToastStore((s) => s.push);
+
+  const flushName = (next: string) => {
+    if (nameTimerRef.current) {
+      clearTimeout(nameTimerRef.current);
+      nameTimerRef.current = null;
+    }
+    if (next.trim() === state.user.name) return;
+    useStore.getState().setUser(next);
+    setSaved(true);
+    pushToast("Nama tersimpan");
+    window.setTimeout(() => setSaved(false), 1500);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -74,14 +88,22 @@ export function SettingsPage() {
       });
     return () => {
       cancelled = true;
+      if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
     };
   }, []);
 
-  const handleNameChange = (name: string) => {
-    useStore.getState().setUser(name);
-    setSaved(true);
-    pushToast("Nama tersimpan");
-    window.setTimeout(() => setSaved(false), 1500);
+  const handleNameChange = (next: string) => {
+    setName(next); // live local input; the server write is debounced
+    if (nameTimerRef.current) clearTimeout(nameTimerRef.current);
+    nameTimerRef.current = window.setTimeout(() => flushName(next), 500);
+  };
+
+  const handleNameBlur = () => {
+    if (nameTimerRef.current) {
+      clearTimeout(nameTimerRef.current);
+      nameTimerRef.current = null;
+    }
+    flushName(name);
   };
 
   const handleModeChange = (mode: TranslationMode) => {
@@ -139,8 +161,9 @@ export function SettingsPage() {
         <div className="mt-3 flex items-center gap-3">
           <input
             type="text"
-            value={state.user.name}
+            value={name}
             onChange={(e) => handleNameChange(e.target.value)}
+            onBlur={handleNameBlur}
             placeholder="What should we call you?"
             className="w-full max-w-xs rounded-xl border border-ink/10 bg-white px-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-canopy-600 focus:ring-2 focus:ring-canopy-600/15"
           />

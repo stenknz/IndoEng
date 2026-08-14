@@ -33,9 +33,9 @@ export function ProfilePage() {
     setNameError("");
     setNamePending(true);
     try {
-      await apiFetch("/api/auth/me", { method: "PATCH", body: { name } });
-      await refreshUser();
+      // setUser performs the server PATCH (single write) and syncs local state.
       useStore.getState().setUser(name);
+      await refreshUser();
       pushToast("Nama tersimpan");
     } catch (err) {
       setNameError(err instanceof Error ? err.message : "Gagal menyimpan nama");

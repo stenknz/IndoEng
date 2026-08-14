@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ user });
   } catch (e) {
     if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    console.error("[api/auth/me GET]", e);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }
@@ -23,6 +24,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ user });
   } catch (e) {
     if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    console.error("[api/auth/me PATCH]", e);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

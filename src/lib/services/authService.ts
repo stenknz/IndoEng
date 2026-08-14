@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "crypto";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { refreshTokens, profiles } from "@/lib/db/schema";
 import type { Db } from "@/lib/db";
 import { HttpError } from "@/lib/auth/requireUser";
@@ -10,7 +10,7 @@ import { hashToken } from "@/lib/auth/session";
 import { loadConfig } from "@/lib/config";
 import { createUser, findUserByEmail, findUserById, updateUserPassword } from "@/lib/repo/users";
 import { createProfileIfMissing } from "@/lib/repo/learner";
-import { createRefreshTokenRow, findRefreshTokenRow, rotateRefreshTokenRow, revokeRefreshTokenRow, revokeAllUserTokens } from "@/lib/repo/authTokens";
+import { createRefreshTokenRow, findRefreshTokenRow, revokeRefreshTokenRow, revokeAllUserTokens } from "@/lib/repo/authTokens";
 import { registerSchema, loginSchema, changePasswordSchema } from "@/lib/validation/schemas";
 import type { z } from "zod";
 
@@ -69,14 +69,35 @@ export async function refreshSession(db: Db, refreshToken: string, meta: { ip?: 
   if (!refreshToken) throw new HttpError(401, "Missing refresh token");
   const row = await findRefreshTokenRow(db, hashToken(refreshToken));
   if (!row) throw new HttpError(401, "Invalid refresh token");
+  // A token whose row already carries a replacement is a REUSED (replayed)
+  // token: the session family is compromised, so revoke every row for the user.
+  if (row.replacedById) {
+    await revokeAllUserTokens(db, row.userId);
+    throw new HttpError(401, "Invalid refresh token");
+  }
   if (row.expiresAt < Date.now()) throw new HttpError(401, "Refresh token expired");
   const user = await findUserById(db, row.userId);
   if (!user || user.disabledAt) throw new HttpError(401, "Invalid refresh token");
   const next = generateRefreshToken();
-  // Preserve the original expiry: rotation moves the hash onto a fresh token
-  // but keeps the fixed window, so a remember-me session is not collapsed to
-  // the session TTL on the first refresh.
-  await rotateRefreshTokenRow(db, row.id, hashToken(next), row.expiresAt);
+  // Rotate onto a NEW row and mark the consumed row as replaced (its
+  // replacedById points at the fresh row). A request that later presents the
+  // rotated-out token finds a row whose replacedById is already set — that is
+  // a replayed token, so the whole family is revoked. The original expiry is
+  // kept, so a remember-me session is not collapsed to the session TTL on the
+  // first refresh. Consumed marker rows accumulate per active session —
+  // bounded by the refresh cadence × token lifetime — and are deleted
+  // wholesale by revokeAllUserTokens.
+  const newRowId = randomUUID();
+  await createRefreshTokenRow(db, {
+    id: newRowId,
+    userId: user.id,
+    tokenHash: hashToken(next),
+    expiresAt: row.expiresAt,
+    userAgent: meta.ua ?? null,
+    ip: meta.ip ?? null,
+    createdAt: Date.now(),
+  });
+  await db.update(refreshTokens).set({ replacedById: newRowId }).where(eq(refreshTokens.id, row.id));
   return {
     accessToken: await signAccessToken({ userId: user.id, role: user.role }),
     refreshToken: next,

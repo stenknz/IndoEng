@@ -7,6 +7,7 @@ const envSchema = z.object({
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(8),
   REMEMBER_TTL_DAYS: z.coerce.number().int().positive().default(30),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  TUTOR_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
   ADMIN_EMAIL: z.string().email().optional().or(z.literal("")),
   ADMIN_PASSWORD: z.string().min(8).optional().or(z.literal("")),
   SMTP_HOST: z.string().optional().or(z.literal("")),
@@ -15,12 +16,25 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional().or(z.literal("")),
   SMTP_FROM: z.string().email().optional().or(z.literal("")),
   APP_URL: z.string().url().default("http://localhost:3000"),
-  TRUST_PROXY: z.coerce.boolean().default(false),
+  // z.coerce.boolean() would parse "false" as true (Boolean("false") === true);
+  // parse explicitly so TRUST_PROXY=false is honored.
+  TRUST_PROXY: z.string().default("false").transform((v) => ["true", "1", "yes"].includes(v.toLowerCase())),
   COOKIE_SECURE: z.coerce.boolean().default(true),
   OPENCODE_GO_API_KEY: z.string().optional().or(z.literal("")),
   OPENCODE_GO_BASE_URL: z.string().url().default("https://opencode.ai/zen/go/v1"),
   OPENCODE_GO_MODEL: z.string().default("deepseek-v4-flash"),
   NODE_ENV: z.string().default("development"),
+}).superRefine((data, ctx) => {
+  // With request.ip gone in Next 15, TRUST_PROXY=false collapses every client
+  // into one shared rate-limit bucket -> a stock production deploy would lock
+  // out all auth. Fail fast instead of shipping a global lockout.
+  if (data.NODE_ENV === "production" && data.TRUST_PROXY === false) {
+    ctx.addIssue({
+      code: "custom",
+      message: "TRUST_PROXY must be true behind a reverse proxy",
+      path: ["TRUST_PROXY"],
+    });
+  }
 });
 
 export interface AppConfig {
@@ -29,6 +43,7 @@ export interface AppConfig {
   sessionTtlHours: number;
   rememberTtlDays: number;
   authRateLimitMax: number;
+  tutorRateLimitMax: number;
   adminEmail: string | null;
   adminPassword: string | null;
   smtp: { host: string | null; port: number; user: string | null; pass: string | null; from: string | null };
@@ -54,6 +69,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     sessionTtlHours: v.SESSION_TTL_HOURS,
     rememberTtlDays: v.REMEMBER_TTL_DAYS,
     authRateLimitMax: v.AUTH_RATE_LIMIT_MAX,
+    tutorRateLimitMax: v.TUTOR_RATE_LIMIT_MAX,
     adminEmail: v.ADMIN_EMAIL || null,
     adminPassword: v.ADMIN_PASSWORD || null,
     smtp: {

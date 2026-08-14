@@ -19,5 +19,9 @@ export async function POST(request: Request) {
     const body = bodySchema.parse(await request.json());
     await appendSession(getDb(), user.id, body);
     return NextResponse.json({ ok: true });
-  } catch (e) { if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status }); return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
+  } catch (e) {
+    if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    console.error("[api/sessions]", e);
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 }

@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createTestDb, dropTestDb } from "@/tests/helpers/testDb";
 import { register, login, refreshSession, revokeSession, changePassword, getPublicUser } from "@/lib/services/authService";
+import { hashToken } from "@/lib/auth/session";
+import { findRefreshTokenRow } from "@/lib/repo/authTokens";
 
 describe("authService", () => {
   let db: any;
@@ -26,6 +28,22 @@ describe("authService", () => {
     expect(s2.accessToken).not.toBe(s.accessToken);
     expect(s2.refreshToken).not.toBe(s.refreshToken);
     await expect(refreshSession(db, s.refreshToken, {})).rejects.toMatchObject({ status: 401 });
+  });
+  it("keeps the rotated-out row as a replay marker (replacedById set)", async () => {
+    const s = await register(db, { email: "a@b.c", name: "A", password: "password123" });
+    await refreshSession(db, s.refreshToken, {});
+    const row = await findRefreshTokenRow(db, hashToken(s.refreshToken));
+    expect(row).toBeDefined();
+    expect(row!.replacedById).toBeTruthy();
+  });
+  it("replaying a rotated token revokes the whole session family", async () => {
+    const s = await register(db, { email: "a@b.c", name: "A", password: "password123" });
+    const s2 = await refreshSession(db, s.refreshToken, {});
+    expect(s2.refreshToken).not.toBe(s.refreshToken);
+    // Replaying the rotated-out (old) token is detected as reuse…
+    await expect(refreshSession(db, s.refreshToken, {})).rejects.toMatchObject({ status: 401 });
+    // …and the whole family is revoked: the current token can no longer refresh.
+    await expect(refreshSession(db, s2.refreshToken, {})).rejects.toMatchObject({ status: 401 });
   });
   it("rejects an expired refresh token", async () => {
     const s = await register(db, { email: "a@b.c", name: "A", password: "password123" });

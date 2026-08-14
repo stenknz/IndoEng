@@ -10,15 +10,28 @@ const authLimiter = createRateLimiter({
   max: loadConfig().authRateLimitMax,
 });
 
+const tutorLimiter = createRateLimiter({
+  windowMs: 60_000,
+  max: loadConfig().tutorRateLimitMax,
+});
+
+const isRateLimited = (pathname: string) =>
+  pathname.startsWith("/api/auth/login") ||
+  pathname.startsWith("/api/auth/register") ||
+  pathname.startsWith("/api/auth/change-password") ||
+  pathname.includes("/reset-password") ||
+  pathname.startsWith("/api/tutor");
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/auth/register")) {
+  if (isRateLimited(pathname)) {
     // Next v15 removed request.ip, so the Edge middleware has no trusted
     // direct client IP; when trustProxy=false we must not trust client-supplied
     // forwarding headers, so clientIp keys on a shared "unknown" bucket.
     const ip = clientIp(request, loadConfig().trustProxy);
-    const r = authLimiter(ip);
+    const limiter = pathname.startsWith("/api/tutor") ? tutorLimiter : authLimiter;
+    const r = limiter(ip);
     if (!r.allowed) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: { "retry-after": String(Math.ceil(r.retryAfterMs / 1000)) } });
     }

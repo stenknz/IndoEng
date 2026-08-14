@@ -64,8 +64,17 @@ export async function countUsers(db: Db): Promise<number> {
 export async function seedAdminIfNeeded(db: Db): Promise<void> {
   const cfg = loadConfig();
   if (!cfg.adminEmail || !cfg.adminPassword) return;
-  const existing = await findUserByEmail(db, cfg.adminEmail);
-  if (existing) return;
   const { hashPassword } = await import("@/lib/auth/password");
-  await createUser(db, { email: cfg.adminEmail, name: "Admin", passwordHash: await hashPassword(cfg.adminPassword), role: "admin" });
+  const now = Date.now();
+  await db.insert(users).values({
+    id: randomUUID(),
+    email: cfg.adminEmail.toLowerCase(),
+    name: "Admin",
+    passwordHash: await hashPassword(cfg.adminPassword),
+    role: "admin",
+    emailVerifiedAt: null,
+    disabledAt: null,
+    createdAt: now,
+    updatedAt: now,
+  }).onConflictDoNothing({ target: users.email });
 }

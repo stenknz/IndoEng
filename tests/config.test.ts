@@ -22,6 +22,21 @@ describe("config", () => {
     expect(() => loadConfig({ ...base, AUTH_RATE_LIMIT_MAX: "0" })).toThrow();
     expect(() => loadConfig({ ...base, AUTH_RATE_LIMIT_MAX: "-5" })).toThrow();
   });
+  it("validates TUTOR_RATE_LIMIT_MAX and rejects non-positive values", () => {
+    expect(loadConfig(base).tutorRateLimitMax).toBe(20); // secure default
+    expect(loadConfig({ ...base, TUTOR_RATE_LIMIT_MAX: "100" }).tutorRateLimitMax).toBe(100);
+    expect(() => loadConfig({ ...base, TUTOR_RATE_LIMIT_MAX: "abc" })).toThrow();
+    expect(() => loadConfig({ ...base, TUTOR_RATE_LIMIT_MAX: "0" })).toThrow();
+    expect(() => loadConfig({ ...base, TUTOR_RATE_LIMIT_MAX: "-5" })).toThrow();
+  });
+  it("fails fast when TRUST_PROXY=false in production", () => {
+    expect(() => loadConfig({ ...base, NODE_ENV: "production", TRUST_PROXY: "false" })).toThrow(/TRUST_PROXY/);
+    expect(loadConfig({ ...base, NODE_ENV: "production", TRUST_PROXY: "true" }).trustProxy).toBe(true);
+  });
+  it("does not reject TRUST_PROXY=false outside production", () => {
+    expect(() => loadConfig({ ...base, NODE_ENV: "development", TRUST_PROXY: "false" })).not.toThrow();
+    expect(() => loadConfig({ ...base, NODE_ENV: "test", TRUST_PROXY: "false" })).not.toThrow();
+  });
   it("throws a precise error when DATABASE_URL is missing", () => {
     expect(() => loadConfig({ JWT_SECRET: base.JWT_SECRET })).toThrow(/DATABASE_URL/);
   });

@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     return res;
   } catch (e) {
     if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    console.error("[api/auth/login]", e);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

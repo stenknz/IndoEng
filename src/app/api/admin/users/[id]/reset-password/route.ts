@@ -10,5 +10,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const body = await request.json();
     await resetUserPassword(getDb(), admin.id, id, body.newPassword);
     return NextResponse.json({ ok: true });
-  } catch (e) { if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status }); return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
+  } catch (e) {
+    if (e instanceof HttpError) return NextResponse.json({ error: e.message }, { status: e.status });
+    console.error("[api/admin/users/:id/reset-password]", e);
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 }
