@@ -31,6 +31,7 @@ export const profiles = pgTable("profiles", {
   level: bigint("level", { mode: "number" }).notNull().default(0),
   translationMode: text("translation_mode").notNull().default("beginner"),
   pronunciationOn: text("pronunciation_on").notNull().default("true"),
+  ttsVoice: text("tts_voice"),
   aiTutorOn: text("ai_tutor_on").notNull().default("false"),
   vocabKnowledge: bigint("vocab_knowledge", { mode: "number" }).notNull().default(0),
   grammarKnowledge: bigint("grammar_knowledge", { mode: "number" }).notNull().default(0),

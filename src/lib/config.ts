@@ -8,6 +8,12 @@ const envSchema = z.object({
   REMEMBER_TTL_DAYS: z.coerce.number().int().positive().default(30),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
   TUTOR_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
+  TTS_PROVIDER: z.enum(["piper", "browser"], { error: "TTS_PROVIDER" }).default("piper"),
+  PIPER_URL: z.string().url().default("http://piper:5000"),
+  TTS_CACHE_DIR: z.string().min(1).default("/data/tts-cache"),
+  TTS_DEFAULT_VOICE: z.string().min(1).default("id_ID-news_tts-medium"),
+  TTS_LENGTH_SCALE: z.coerce.number().positive().default(1.1),
+  TTS_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
   ADMIN_EMAIL: z.string().email().optional().or(z.literal("")),
   ADMIN_PASSWORD: z.string().min(8).optional().or(z.literal("")),
   SMTP_HOST: z.string().optional().or(z.literal("")),
@@ -44,6 +50,8 @@ export interface AppConfig {
   rememberTtlDays: number;
   authRateLimitMax: number;
   tutorRateLimitMax: number;
+  tts: { provider: "piper" | "browser"; piperUrl: string; cacheDir: string; defaultVoice: string; lengthScale: number };
+  ttsRateLimitMax: number;
   adminEmail: string | null;
   adminPassword: string | null;
   smtp: { host: string | null; port: number; user: string | null; pass: string | null; from: string | null };
@@ -70,6 +78,14 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     rememberTtlDays: v.REMEMBER_TTL_DAYS,
     authRateLimitMax: v.AUTH_RATE_LIMIT_MAX,
     tutorRateLimitMax: v.TUTOR_RATE_LIMIT_MAX,
+    tts: {
+      provider: v.TTS_PROVIDER,
+      piperUrl: v.PIPER_URL,
+      cacheDir: v.TTS_CACHE_DIR,
+      defaultVoice: v.TTS_DEFAULT_VOICE,
+      lengthScale: v.TTS_LENGTH_SCALE,
+    },
+    ttsRateLimitMax: v.TTS_RATE_LIMIT_MAX,
     adminEmail: v.ADMIN_EMAIL || null,
     adminPassword: v.ADMIN_PASSWORD || null,
     smtp: {

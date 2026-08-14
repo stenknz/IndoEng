@@ -25,6 +25,7 @@ export async function getProfileRow(db: Db, userId: string): Promise<LearningPro
     level: toNum(r.level) as 0 | 1 | 2 | 3 | 4,
     translationMode: (r.translationMode as LearningProfile["translationMode"]),
     pronunciationOn: toBool(r.pronunciationOn),
+    ttsVoice: r.ttsVoice ?? null,
     aiTutorOn: toBool(r.aiTutorOn),
     vocabKnowledge: toNum(r.vocabKnowledge),
     grammarKnowledge: toNum(r.grammarKnowledge),
@@ -43,6 +44,7 @@ export async function saveProfileRow(db: Db, userId: string, p: LearningProfile)
   await createProfileIfMissing(db, userId);
   await db.update(profiles).set({
     level: p.level, translationMode: p.translationMode, pronunciationOn: String(p.pronunciationOn),
+    ttsVoice: p.ttsVoice ?? null,
     aiTutorOn: String(p.aiTutorOn), vocabKnowledge: p.vocabKnowledge, grammarKnowledge: p.grammarKnowledge,
     conversationAbility: p.conversationAbility, readingAbility: p.readingAbility, listeningAbility: p.listeningAbility,
     recentMistakes: JSON.parse(JSON.stringify(p.recentMistakes)), confidence: String(p.confidence),

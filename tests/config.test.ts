@@ -48,4 +48,13 @@ describe("config", () => {
     expect(r.ok).toBe(false);
     expect(r.errors.join()).toMatch(/DATABASE_URL/);
   });
+  it("validates TTS config defaults and rejects a bad provider", () => {
+    const c = loadConfig(base);
+    expect(c.tts.provider).toBe("piper");
+    expect(c.tts.piperUrl).toBe("http://piper:5000");
+    expect(c.tts.defaultVoice).toBe("id_ID-news_tts-medium");
+    expect(c.ttsRateLimitMax).toBe(60);
+    expect(() => loadConfig({ ...base, TTS_PROVIDER: "wat" })).toThrow(/TTS_PROVIDER/);
+    expect(validateConfig({ ...base, TTS_RATE_LIMIT_MAX: "abc" }).ok).toBe(false);
+  });
 });
