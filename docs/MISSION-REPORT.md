@@ -13,7 +13,8 @@ browser profile wipe.
 
 It is now a multi-user, self-hosted platform. A Next.js 15 server (rendered as a
 standalone output) sits behind Caddy with automatic TLS, backed by Postgres and
-a Piper TTS sidecar, all deployed from GitHub Actions to a NAS Docker host. Any
+a Piper TTS sidecar, all deployable from GitHub Actions to a Docker/Portainer
+host. Any
 Indonesian learner can register, log in, practice lessons, and hear Indonesian
 voice audio generated on the server.
 
@@ -85,12 +86,16 @@ voice audio generated on the server.
                      internal :3000
                            |
                     [Next standalone app]
-                          /  |  \
-                 /api/health /api/tts  (outbound)
-                       |      |
-                  postgres   piper:5000
-                  (internal)  (internal)
+                       |            \
+                       |             \
+                  postgres      piper:5000
+                 (internal)    (outbound TTS)
+                 DB read/write
 ```
+
+`/api/health` is a liveness-only probe and never pings the database. The only
+outbound service call from the app is `app → piper:5000`; `/api/tts` is the
+in-app route the browser hits, not an outbound hop.
 
 Request path: browser → (auth middleware) → dashboard/lesson → SpeakButton →
 `/api/tts` → Piper sidecar (or browser-TTS fallback) → cached WAV → audio. The
@@ -111,3 +116,73 @@ lessons remain usable.
 - Gates were re-run at report time: `tsc --noEmit` and the vitest suite both
   passed on the commit noted above; the e2e and Docker acceptance runs are
   recorded in `docs/ops/deployment.md` and the CI workflows.
+
+## 5. Known limitations & deferred items
+
+Each item was re-verified against the tree before listing. Marked
+"(safe to defer)" or "(needs decision)".
+
+- **Settings Piper status is env-static, not liveness-aware.** `ttsService.ts`
+  computes `configured` from env (`cfg.tts.provider === "piper" && piperUrl`
+  set), never from Piper's runtime state. Functional fallback holds: if Piper
+  is down, the resolver degrades to browser TTS. (safe to defer)
+- **TTS cache key is text+voice only.** `/api/tts` entries are shared across
+  users; fine today because lesson audio is identical for everyone and
+  low-sensitivity. (safe to defer)
+- **`/api/health` is liveness-only (no DB ping).** It returns
+  `{ status: "ok" }` without touching Postgres, so a DB outage won't fail the
+  probe. (safe to defer)
+- **Next 15.1.6 advisory.** `npm audit` reports multiple advisories affecting
+  `next@15.1.6`, including the RSC RCE (GHSA-9qr9-h5gf-34mp /
+  CVE-2025-55182). The audit is advisory-only by design. The ledger's
+  "CVE-2025-66478" reference is a rejected NVD duplicate of CVE-2025-55182;
+  the advisory is real, only the identifier was wrong. (safe to defer)
+- **Piper voice model license "unclear".** The sub-project B design flagged it:
+  the Indonesian voice model's license is fuzzy and must be cleared before any
+  commercial distribution. (needs decision)
+- **No CI concurrency group.** Concurrent pushes can run duplicate
+  verify/deploy jobs; harmless at current volume. (safe to defer)
+- **`package.json` `lint` script is non-functional locally** — `next lint`
+  with no ESLint installed; the CI lint step is already removed. (safe to defer)
+- **Root `package-lock.json` ranges still `^`** (e.g. `"bcryptjs": "^3.0.3"`);
+  the lockfile self-heals on regeneration. (safe to defer)
+- **No automated test for the instrumentation throw guard.** The fail-fast
+  path is covered by container smoke instead. (safe to defer)
+- **piperTTS `audioEl` singleton is not reset between tests** — a cached
+  `Audio` element in `src/lib/audio/piperTTS.ts`; harmless in the current
+  suite. (safe to defer)
+- **SpeakButton hint never clears.** Once shown, the "cannot play audio" hint
+  stays until unmount. (safe to defer)
+- **Settings "Default" voice option duplicates a value and is a one-way
+  door.** Its value equals the resolved default voice already in the list, and
+  once another voice is chosen the option disappears. (needs decision)
+
+## 6. How to run
+
+**Development** (host + containers): `npm run dev` for the Next.js app with
+`.env.local` per `.env.example`; `docker compose -f docker-compose.dev.yml up`
+for Postgres + Piper (Piper on host port 5001).
+
+**Production**: Docker Desktop smoke first — build both images
+(`docker build -t kak-app:main .` and `docker build -t kak-piper:main ./piper`),
+then `docker compose -f docker-compose.prod.yml up -d` and confirm the four
+services come up healthy with audible Piper audio (browse `https://localhost`).
+Then the Portainer deploy: add the compose file plus the `.env` and `Caddyfile`
+stack files, set `APP_IMAGE`/`PIPER_IMAGE` to the ghcr.io tags, and configure
+the `PORTAINER_WEBHOOK_URL` secret. Full runbook: `docs/ops/deployment.md`.
+
+## 7. Next steps
+
+Steps that require the user:
+
+- Add the git remote and push `main` (`git remote add origin …`; no remote
+  exists yet).
+- Create the Portainer stack with the compose + `.env` + `Caddyfile` files.
+- Set the `PORTAINER_WEBHOOK_URL` GitHub secret (Portainer Business; Community
+  Edition must redeploy manually).
+- Set `APP_IMAGE`/`PIPER_IMAGE` to the ghcr.io tags and do the real-NAS deploy
+  with acceptance.
+
+Future work: liveness-aware TTS status in Settings, `/api/health` readiness
+(DB ping), a CI concurrency group, ESLint setup or lint-script removal, and the
+Piper voice-model license decision before any commercial distribution.
