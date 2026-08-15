@@ -18,7 +18,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run lint
+      # No lint step: this project has no ESLint config, so `next lint` would
+      # prompt interactively and exit 1, failing the gate.
       - run: npx tsc --noEmit
       - run: npm test
       - name: npm audit (advisory, non-blocking)
@@ -34,6 +35,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
       - name: Start Postgres + Piper
         run: docker compose -f docker-compose.dev.yml up -d --build
       - name: Run e2e
