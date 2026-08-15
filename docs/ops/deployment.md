@@ -46,3 +46,30 @@ lesson 1. Teardown: `docker compose -f docker-compose.prod.yml down -v`.
 - Migrations run automatically at app boot (src/instrumentation.ts); no manual
   DB steps. Admin account is seeded on first boot from `ADMIN_EMAIL`/
   `ADMIN_PASSWORD`.
+
+## 3. Verification summary (Task 6 — 2026-08-15)
+
+Full local gate on `main` (`21da317`): `tsc --noEmit` clean; vitest
+**166/166**; `next build` OK (standalone); Playwright **9/9** (against the dev
+compose Postgres + Piper). Full prod stack accepted on Docker Desktop:
+`docker compose -f docker-compose.prod.yml up -d --build` → `app`/`piper`/
+`postgres`/`caddy` all running, `app` healthy. Browser (Chromium) smoke via
+Caddy: register/login/logout work, Settings → Suara shows `Suara Piper
+(server) ✓`, "Coba" plays a real Piper WAV (116,780 bytes), lesson words
+speak (30,252 bytes in `tts_cache`). `/api/health` → `200 {"status":"ok"}`
+through Caddy. Fail-fast verified end-to-end: with `TRUST_PROXY=false` the
+`app` container logs `TRUST_PROXY must be true in production`, stays
+`Restarting (1)`, reports `unhealthy`, and Caddy returns 502 — it never
+starts.
+
+### Docker Desktop caveats found
+
+- **Caddy auto-HTTPS redirects `http://` → `https://`** (308). Use
+  `https://localhost` (curl: add `-k`; the cert is Caddy's local CA).
+- **Port 80 busy** (e.g. another server) → set `CADDY_HTTP_PORT=8080` and
+  browse `https://localhost:8080`. Port 443 likewise via `CADDY_HTTPS_PORT`.
+- **Playwright `response.body()` returns 0 bytes** for the streamed
+  `/api/tts` audio behind Caddy (gzip/chunked); verify audibility by the
+  `tts_cache` volume WAV size or a plain `curl` instead of the response body.
+- Piper's host port is **5001** in the dev compose on all platforms
+  (`5001:5000`; macOS AirPlay owns 5000).
