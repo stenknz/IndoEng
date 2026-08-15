@@ -1,5 +1,3 @@
-name: kak-prod
-
 services:
   app:
     image: ${APP_IMAGE:-kak-app:main}
