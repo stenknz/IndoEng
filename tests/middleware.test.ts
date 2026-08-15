@@ -6,6 +6,7 @@ describe("middleware logic", () => {
     expect(shouldGate("/api/auth/login")).toBe(false);
     expect(shouldGate("/api/auth/refresh")).toBe(false);
     expect(shouldGate("/api/tutor")).toBe(true);
+    expect(shouldGate("/api/health")).toBe(false);
     expect(shouldGate("/api/state")).toBe(true);
   });
   it("checks CSRF header on non-GET", async () => {

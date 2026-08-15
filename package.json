@@ -12,7 +12,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "validate-config": "node scripts/validate-config.mjs"
   },
   "dependencies": {
     "bcryptjs": "3.0.3",
