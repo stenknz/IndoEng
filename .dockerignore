@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+npm-debug.log*
+tests
+e2e
+test-results
+playwright-report
+coverage
+docs
+screenshots
+.superpowers
+.env
+.env.*
+*.tsbuildinfo
+piper
+docker-compose*.yml
